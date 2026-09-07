@@ -1,0 +1,191 @@
+@let item = analysis();
+
+<article class="analysis-result" [attr.aria-labelledby]="'analysis-result-' + item.id">
+  <header class="result-heading">
+    <div>
+      <p class="result-context">
+        {{ historical() ? 'Historical analysis' : 'Latest completed analysis' }}
+      </p>
+      <h4 [id]="'analysis-result-' + item.id">
+        @if (item.status === 'COMPLETED') {
+          Analyze result
+        } @else if (item.status === 'FAILED') {
+          Analysis failed
+        } @else {
+          Analysis in progress
+        }
+      </h4>
+    </div>
+    <span class="status-badge" [attr.data-status]="item.status">
+      {{ item.status === 'RUNNING' ? 'Running' : item.status === 'COMPLETED' ? 'Completed' : 'Failed' }}
+    </span>
+  </header>
+
+  <p class="result-time">
+    <time [attr.datetime]="relevantTimestamp(item)">
+      {{ relevantTimestamp(item) | date: 'medium' }}
+    </time>
+  </p>
+
+  @if (item.status === 'RUNNING') {
+    <div class="state-panel" role="status">
+      <p>Analysis in progress. A later Analyze run can recover an interrupted execution.</p>
+    </div>
+  } @else if (item.status === 'FAILED') {
+    <div class="state-panel state-panel--failed">
+      <p>{{ item.failureMessage ?? 'This analysis did not complete successfully.' }}</p>
+    </div>
+  } @else if (item.analysisData; as output) {
+    <section class="score-summary" aria-labelledby="suggested-fit-score">
+      <div class="score-card">
+        <p id="suggested-fit-score">Suggested fit score</p>
+        @if (item.suggestedScore === null) {
+          <strong class="score-card__unavailable">Not enough evaluable requirements</strong>
+        } @else {
+          <strong>{{ item.suggestedScore }}<span>/100</span></strong>
+        }
+      </div>
+      <div class="summary-card">
+        <h5>Fit summary</h5>
+        <p>{{ output.fitSummary }}</p>
+      </div>
+    </section>
+
+    <section class="result-section" aria-labelledby="role-summary-title">
+      <h5 id="role-summary-title">Role summary</h5>
+      <p>{{ output.roleSummary }}</p>
+    </section>
+
+    <section class="result-section" aria-labelledby="requirements-title">
+      <h5 id="requirements-title">Requirements</h5>
+      @if (output.requirements.length === 0) {
+        <p class="empty-section">No requirements were identified.</p>
+      } @else {
+        <ol class="requirement-list">
+          @for (requirement of output.requirements; track $index) {
+            <li class="requirement-card">
+              <div class="requirement-heading">
+                <strong>{{ requirement.requirement }}</strong>
+                <div class="badge-row">
+                  <span class="label-badge">{{ importanceLabel(requirement.importance) }}</span>
+                  <span class="label-badge" [attr.data-match]="requirement.matchStrength">
+                    {{ matchStrengthLabel(requirement.matchStrength) }}
+                  </span>
+                </div>
+              </div>
+              @if (requirement.evidence.length > 0) {
+                <p class="evidence-label">Evidence</p>
+                <ul class="compact-list">
+                  @for (evidence of requirement.evidence; track $index) {
+                    <li>{{ evidence }}</li>
+                  }
+                </ul>
+              }
+            </li>
+          }
+        </ol>
+      }
+    </section>
+
+    <div class="two-column-sections">
+      <section class="result-section" aria-labelledby="strengths-title">
+        <h5 id="strengths-title">Strengths</h5>
+        @if (output.strengths.length === 0) {
+          <p class="empty-section">No strengths were identified.</p>
+        } @else {
+          <ul class="compact-list">
+            @for (strength of output.strengths; track $index) {
+              <li>{{ strength }}</li>
+            }
+          </ul>
+        }
+      </section>
+
+      <section class="result-section" aria-labelledby="gaps-title">
+        <h5 id="gaps-title">Gaps</h5>
+        @if (output.gaps.length === 0) {
+          <p class="empty-section">No gaps were identified.</p>
+        } @else {
+          <ul class="compact-list">
+            @for (gap of output.gaps; track $index) {
+              <li>{{ gap }}</li>
+            }
+          </ul>
+        }
+      </section>
+    </div>
+
+    <section class="result-section" aria-labelledby="hard-constraints-title">
+      <h5 id="hard-constraints-title">Hard constraints</h5>
+      @if (output.hardConstraints.length === 0) {
+        <p class="empty-section">No hard constraints were identified.</p>
+      } @else {
+        <ul class="constraint-list">
+          @for (constraint of output.hardConstraints; track $index) {
+            <li class="constraint-card">
+              <div>
+                <strong>{{ constraint.constraint }}</strong>
+                <span class="constraint-state" [attr.data-satisfied]="constraint.satisfied">
+                  {{ constraintStatus(constraint.satisfied) }}
+                </span>
+              </div>
+              @if (constraint.evidence.length > 0) {
+                <ul class="compact-list">
+                  @for (evidence of constraint.evidence; track $index) {
+                    <li>{{ evidence }}</li>
+                  }
+                </ul>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <section class="result-section" aria-labelledby="candidate-evidence-title">
+      <h5 id="candidate-evidence-title">Candidate evidence</h5>
+      @if (output.candidateEvidence.length === 0) {
+        <p class="empty-section">No candidate evidence was identified.</p>
+      } @else {
+        <ul class="evidence-cards">
+          @for (claim of output.candidateEvidence; track $index) {
+            <li>
+              <strong>{{ claim.claim }}</strong>
+              @if (claim.evidence.length > 0) {
+                <ul class="compact-list">
+                  @for (evidence of claim.evidence; track $index) {
+                    <li>{{ evidence }}</li>
+                  }
+                </ul>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <section class="result-section" aria-labelledby="keywords-title">
+      <h5 id="keywords-title">Keywords</h5>
+      @if (output.keywords.length === 0) {
+        <p class="empty-section">No keywords were identified.</p>
+      } @else {
+        <ul class="keyword-list">
+          @for (keyword of output.keywords; track $index) {
+            <li>{{ keyword }}</li>
+          }
+        </ul>
+      }
+    </section>
+
+    @if (output.warnings.length > 0) {
+      <section class="result-section warning-section" aria-labelledby="warnings-title">
+        <h5 id="warnings-title">Warnings</h5>
+        <ul class="compact-list">
+          @for (warning of output.warnings; track $index) {
+            <li>{{ warning }}</li>
+          }
+        </ul>
+      </section>
+    }
+  }
+</article>

@@ -1,0 +1,86 @@
+<section class="version-history" aria-labelledby="document-version-history-title">
+  <header class="history-heading">
+    <div>
+      <p class="eyebrow">Document history</p>
+      <h5 id="document-version-history-title">Version history</h5>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="history-state" role="status" aria-live="polite">
+      <span class="spinner" aria-hidden="true"></span>
+      <p>Loading version history…</p>
+    </div>
+  } @else if (loadError()) {
+    <div class="history-state">
+      <p class="notice notice--error" role="alert">{{ loadError() }}</p>
+      <button class="button" type="button" (click)="retry()">Try again</button>
+    </div>
+  } @else if (versions().length === 0) {
+    <div class="history-state history-state--empty">
+      <p>No document versions are available.</p>
+    </div>
+  } @else {
+    <div class="history-workspace">
+      <ol class="version-list" aria-label="Document versions, newest first">
+        @for (version of versions(); track version.id; let index = $index) {
+          <li>
+            <button
+              class="version-card"
+              type="button"
+              [class.version-card--selected]="selectedVersion()?.id === version.id"
+              [attr.aria-pressed]="selectedVersion()?.id === version.id"
+              (click)="selectVersion(version)"
+            >
+              <span>
+                <strong>Version {{ versionNumber(index) }}</strong>
+                @if (isCurrent(version)) {
+                  <span class="current-badge">Current</span>
+                }
+              </span>
+              <time [attr.datetime]="version.createdAt">
+                {{ version.createdAt | date: 'medium' }}
+              </time>
+            </button>
+          </li>
+        }
+      </ol>
+
+      <div class="version-preview">
+        @if (selectedVersion(); as version) {
+          <header>
+            <h6>Version preview</h6>
+            <time [attr.datetime]="version.createdAt">
+              {{ version.createdAt | date: 'medium' }}
+            </time>
+          </header>
+          <pre>{{ previewContent() }}</pre>
+
+          @if (restoreError()) {
+            <p class="notice notice--error" role="alert">{{ restoreError() }}</p>
+          }
+          @if (restoreSuccess()) {
+            <p class="notice notice--success" role="status">{{ restoreSuccess() }}</p>
+          }
+
+          @if (isCurrent(version)) {
+            <p class="current-message">This is the current version.</p>
+          } @else {
+            <button
+              class="button button--primary restore-button"
+              type="button"
+              [disabled]="restoring()"
+              (click)="restoreSelectedVersion()"
+            >
+              {{ restoring() ? 'Restoring…' : 'Restore this version' }}
+            </button>
+          }
+        } @else {
+          <div class="history-state history-state--empty">
+            <p>Select a version to preview it.</p>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</section>

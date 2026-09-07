@@ -1,0 +1,98 @@
+app-markdown-content {
+  display: block;
+  min-width: 0;
+}
+
+app-markdown-content .markdown-content {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+app-markdown-content .markdown-content > :first-child {
+  margin-top: 0;
+}
+
+app-markdown-content .markdown-content > :last-child {
+  margin-bottom: 0;
+}
+
+app-markdown-content .markdown-content h1,
+app-markdown-content .markdown-content h2,
+app-markdown-content .markdown-content h3,
+app-markdown-content .markdown-content h4,
+app-markdown-content .markdown-content h5,
+app-markdown-content .markdown-content h6 {
+  margin: 1rem 0 0.5rem;
+  color: inherit;
+  line-height: 1.3;
+}
+
+app-markdown-content .markdown-content p,
+app-markdown-content .markdown-content ul,
+app-markdown-content .markdown-content ol,
+app-markdown-content .markdown-content blockquote,
+app-markdown-content .markdown-content pre {
+  margin: 0.5rem 0;
+}
+
+app-markdown-content .markdown-content ul,
+app-markdown-content .markdown-content ol {
+  display: grid;
+  gap: 0.3rem;
+  padding-left: 1.35rem;
+}
+
+app-markdown-content .markdown-content pre {
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre-wrap;
+}
+
+app-markdown-content .markdown-content--brief {
+  color: #243b53;
+  line-height: 1.65;
+}
+
+app-markdown-content .markdown-content--brief h1 {
+  margin: 0 0 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #d9e2ec;
+  color: #102a43;
+  font-size: clamp(1.45rem, 3vw, 1.85rem);
+}
+
+app-markdown-content .markdown-content--brief h2 {
+  margin: 2rem 0 0.75rem;
+  color: #102a43;
+  font-size: 1.2rem;
+}
+
+app-markdown-content .markdown-content--brief h3 {
+  margin: 1.5rem 0 0.65rem;
+  color: #334e68;
+  font-size: 1.05rem;
+}
+
+app-markdown-content .markdown-content--brief p,
+app-markdown-content .markdown-content--brief ul,
+app-markdown-content .markdown-content--brief ol,
+app-markdown-content .markdown-content--brief blockquote {
+  margin-block: 0.75rem;
+}
+
+app-markdown-content .markdown-content--brief ul,
+app-markdown-content .markdown-content--brief ol {
+  gap: 0.55rem;
+  padding-left: 1.5rem;
+}
+
+app-markdown-content .markdown-content--brief li {
+  padding-left: 0.15rem;
+}
+
+app-markdown-content .markdown-content--brief blockquote {
+  margin-inline: 0;
+  border-left: 0.25rem solid #84c5f4;
+  background: #f0f8ff;
+  padding: 0.75rem 1rem;
+}

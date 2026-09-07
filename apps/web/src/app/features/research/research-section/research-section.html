@@ -1,0 +1,130 @@
+<section
+  #researchSection
+  class="research-section"
+  aria-labelledby="application-research-title"
+>
+  <header class="research-heading">
+    <div>
+      <p class="eyebrow">Workspace</p>
+      <h3 id="application-research-title">Research</h3>
+      <p class="section-description">
+        Review current company, role, compensation, and interview evidence from external sources.
+      </p>
+    </div>
+    <button
+      class="button button--primary"
+      type="button"
+      [disabled]="runInProgress() || initialLoading()"
+      (click)="runResearch()"
+    >
+      {{ runButtonLabel() }}
+    </button>
+  </header>
+
+  @if (runInProgress()) {
+    <p class="notice notice--progress" role="status" aria-live="polite">
+      Researching application… Your previous completed result remains available while this runs.
+    </p>
+  }
+
+  @if (runError()) {
+    <p class="notice notice--error" role="alert">{{ runError() }}</p>
+  }
+
+  @if (initialLoading()) {
+    <div class="research-state" role="status" aria-live="polite">
+      <span class="spinner" aria-hidden="true"></span>
+      <p>Loading Research results…</p>
+    </div>
+  } @else {
+    @if (initialLoadError()) {
+      <div class="research-state">
+        <p class="notice notice--error" role="alert">{{ initialLoadError() }}</p>
+        <button class="button button--secondary" type="button" (click)="retryInitialLoad()">
+          Try again
+        </button>
+      </div>
+    }
+
+    @if (viewingHistorical()) {
+      <button class="return-button" type="button" (click)="returnToLatest()">
+        ← Return to latest Research
+      </button>
+    }
+
+    @if (historyDetailLoading()) {
+      <p class="detail-state" role="status" aria-live="polite">
+        Loading selected Research…
+      </p>
+    }
+
+    @if (historyDetailError()) {
+      <p class="notice notice--error" role="alert">{{ historyDetailError() }}</p>
+    }
+
+    @if (displayedResearch(); as research) {
+      <app-research-result
+        [research]="research"
+        [historical]="viewingHistorical()"
+      />
+    } @else if (!historyDetailLoading() && !initialLoadError()) {
+      <div class="research-state research-state--empty">
+        <h4>{{ history().length === 0 ? 'No research has been run for this application yet.' : 'No completed Research yet.' }}</h4>
+        <p>Run Research to investigate this company and role using current external sources.</p>
+      </div>
+    }
+  }
+
+  <section class="history-section" aria-labelledby="research-history-title">
+    <div class="history-heading">
+      <h4 id="research-history-title">Research history</h4>
+      @if (historyLoading()) {
+        <span role="status" aria-live="polite">Loading…</span>
+      }
+    </div>
+
+    @if (historyError()) {
+      <p class="notice notice--error" role="alert">{{ historyError() }}</p>
+    }
+
+    @if (!historyLoading() && history().length === 0 && !historyError()) {
+      <p class="history-empty">No Research runs yet.</p>
+    } @else if (history().length > 0) {
+      <ol class="history-list" aria-label="Research history, newest first">
+        @for (item of history(); track item.id) {
+          <li>
+            <button
+              class="history-item"
+              type="button"
+              [class.history-item--selected]="selectedHistoricalResearchId() === item.id"
+              [attr.aria-pressed]="selectedHistoricalResearchId() === item.id"
+              [attr.aria-label]="'View ' + statusLabel(item.status) + ' Research from ' + historyTimestamp(item)"
+              (click)="selectResearch(item.id)"
+            >
+              <span class="history-item__main">
+                <span class="status-badge" [attr.data-status]="item.status">
+                  {{ statusLabel(item.status) }}
+                </span>
+                <time [attr.datetime]="historyTimestamp(item)">
+                  {{ historyTimestamp(item) | date: 'medium' }}
+                </time>
+              </span>
+              <span class="history-item__detail">
+                @if (item.status === 'COMPLETED') {
+                  Research completed
+                } @else if (item.status === 'FAILED') {
+                  {{ item.failureMessage ?? 'Research did not complete' }}
+                } @else {
+                  Research is running
+                }
+                @if (item.promptVersion) {
+                  <span> · {{ item.promptVersion }}</span>
+                }
+              </span>
+            </button>
+          </li>
+        }
+      </ol>
+    }
+  </section>
+</section>

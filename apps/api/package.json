@@ -1,0 +1,42 @@
+{
+  "name": "@job-hunting-ai/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.15.0 <25"
+  },
+  "scripts": {
+    "dev": "node --env-file-if-exists=../../.env --watch --import=tsx src/server.ts",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:db:provision": "tsx scripts/test-database.ts provision",
+    "test:db:migrate": "tsx scripts/test-database.ts migrate",
+    "test:db": "pnpm test:db:provision && pnpm test:db:migrate && vitest run --config vitest.db.config.ts",
+    "build": "tsc -p tsconfig.build.json && node scripts/package-generation-templates.mjs",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed": "tsx scripts/seed-development.ts",
+    "llm:smoke:openai": "node --env-file-if-exists=../../.env --import=tsx scripts/openai-smoke-test.ts",
+    "llm:smoke:web-search": "node --env-file-if-exists=../../.env --import=tsx scripts/openai-web-search-smoke-test.ts",
+    "analyze:smoke:openai": "node --env-file-if-exists=../../.env --import=tsx scripts/analyze-openai-smoke-test.ts",
+    "research:smoke": "node --env-file-if-exists=../../.env --import=tsx scripts/research-openai-smoke-test.ts"
+  },
+  "dependencies": {
+    "drizzle-orm": "0.45.2",
+    "fastify": "^5.10.0",
+    "openai": "^7.5.0",
+    "postgres": "3.4.9",
+    "zod": "4.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "drizzle-kit": "0.31.10",
+    "eslint": "^10.8.0",
+    "tsx": "^4.23.1",
+    "typescript": "~6.0.2",
+    "typescript-eslint": "^8.65.0",
+    "vitest": "^4.1.10"
+  }
+}

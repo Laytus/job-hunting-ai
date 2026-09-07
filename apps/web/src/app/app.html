@@ -1,0 +1,16 @@
+<header class="site-header">
+  <div class="site-header__content">
+    <div>
+      <p class="eyebrow">Personal job-search workspace</p>
+      <h1 id="page-title">Job Hunting AI</h1>
+    </div>
+    <nav class="site-nav" aria-label="Primary navigation">
+      <a routerLink="/applications" routerLinkActive="site-nav__link--active">Applications</a>
+      <a routerLink="/candidate" routerLinkActive="site-nav__link--active">Candidate</a>
+    </nav>
+  </div>
+</header>
+
+<main class="site-main" aria-labelledby="page-title">
+  <router-outlet />
+</main>

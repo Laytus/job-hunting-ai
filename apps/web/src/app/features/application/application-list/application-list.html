@@ -1,0 +1,68 @@
+<section class="application-list" aria-labelledby="applications-title">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">Opportunity tracker</p>
+      <h2 id="applications-title">Applications</h2>
+      <p>Track each opportunity and keep its current status in one place.</p>
+    </div>
+    <a class="button button--primary" routerLink="/applications/new">Add application</a>
+  </header>
+
+  @if (loading()) {
+    <div class="state-card" role="status" aria-live="polite">
+      <span class="spinner" aria-hidden="true"></span>
+      <p>Loading applications…</p>
+    </div>
+  } @else if (error()) {
+    <div class="state-card">
+      <h3>Applications unavailable</h3>
+      <p class="notice notice--error" role="alert">{{ error() }}</p>
+      <button class="button button--secondary" type="button" (click)="loadApplications()">
+        Try again
+      </button>
+    </div>
+  } @else if (applications().length === 0) {
+    <div class="state-card state-card--empty">
+      <p class="eyebrow">Start tracking</p>
+      <h3>No applications yet</h3>
+      <p>Add an opportunity to begin tracking its progress.</p>
+      <a class="button button--primary" routerLink="/applications/new">Create first application</a>
+    </div>
+  } @else {
+    <div class="application-grid" aria-label="Application list">
+      @for (application of applications(); track application.id) {
+        <article class="application-card">
+          <div class="application-card__heading">
+            <div>
+              <p class="company">{{ application.companyName }}</p>
+              <h3>
+                <a [routerLink]="['/applications', application.id]">{{ application.roleTitle }}</a>
+              </h3>
+            </div>
+            <span class="priority" [attr.data-priority]="application.priority">
+              {{ application.priority }}
+            </span>
+          </div>
+
+          <dl>
+            <div>
+              <dt>Status</dt>
+              <dd>{{ application.status }}</dd>
+            </div>
+            <div>
+              <dt>Location</dt>
+              <dd>{{ application.location ?? 'Not specified' }}</dd>
+            </div>
+          </dl>
+
+          <p class="updated">
+            Updated
+            <time [attr.datetime]="application.updatedAt">
+              {{ application.updatedAt | date: 'mediumDate' }}
+            </time>
+          </p>
+        </article>
+      }
+    </div>
+  }
+</section>

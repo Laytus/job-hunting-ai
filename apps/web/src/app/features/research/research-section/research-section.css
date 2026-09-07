@@ -1,0 +1,271 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.research-section {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+  scroll-margin-top: 1rem;
+  border: 1px solid #d9e2ec;
+  border-radius: 0.9rem;
+  background: #fff;
+  box-shadow: 0 0.4rem 1.5rem rgb(16 42 67 / 6%);
+  padding: clamp(1rem, 3vw, 1.5rem);
+}
+
+.research-heading,
+.history-heading,
+.history-item__main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.research-heading {
+  align-items: flex-start;
+}
+
+.research-heading h3,
+.research-heading p,
+.research-state h4,
+.research-state p,
+.history-heading h4,
+.history-empty,
+.detail-state,
+.notice {
+  margin: 0;
+}
+
+.research-heading h3 {
+  color: #102a43;
+  font-size: 1.25rem;
+}
+
+.eyebrow {
+  margin-bottom: 0.4rem !important;
+  color: #486581;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.section-description {
+  max-width: 45rem;
+  margin-top: 0.4rem !important;
+  color: #52606d;
+  line-height: 1.5;
+}
+
+.research-state {
+  display: grid;
+  justify-items: start;
+  gap: 0.85rem;
+  color: #52606d;
+}
+
+.research-state--empty {
+  border: 1px dashed #bcccdc;
+  border-radius: 0.7rem;
+  padding: 1.25rem;
+}
+
+.research-state--empty h4 {
+  color: #102a43;
+}
+
+.research-state--empty p {
+  line-height: 1.6;
+}
+
+.button,
+.return-button,
+.history-item {
+  font: inherit;
+  cursor: pointer;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  border: 1px solid transparent;
+  border-radius: 0.6rem;
+  padding: 0.65rem 1rem;
+  font-weight: 700;
+}
+
+.button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.button--primary {
+  background: #0b69a3;
+  color: #fff;
+}
+
+.button--secondary {
+  border-color: #9fb3c8;
+  background: #fff;
+  color: #243b53;
+}
+
+.notice {
+  border-radius: 0.6rem;
+  padding: 0.85rem 1rem;
+}
+
+.notice--progress {
+  border: 1px solid #84c5f4;
+  background: #e6f6ff;
+  color: #035388;
+}
+
+.notice--error {
+  border: 1px solid #f7c1c1;
+  background: #fff5f5;
+  color: #a61b1b;
+}
+
+.spinner {
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 0.18rem solid #bcccdc;
+  border-top-color: #0b69a3;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.return-button {
+  width: fit-content;
+  min-height: 2.5rem;
+  border: 0;
+  background: transparent;
+  color: #035388;
+  padding: 0;
+  font-weight: 800;
+}
+
+.detail-state,
+.history-empty {
+  color: #627d98;
+}
+
+.history-section {
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+  border-top: 1px solid #d9e2ec;
+  padding-top: 1rem;
+}
+
+.history-heading h4 {
+  color: #102a43;
+  font-size: 1rem;
+}
+
+.history-heading span {
+  color: #627d98;
+  font-size: 0.85rem;
+}
+
+.history-list {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.history-item {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  gap: 0.45rem;
+  border: 1px solid #d9e2ec;
+  border-radius: 0.65rem;
+  background: #f8fafc;
+  color: #243b53;
+  padding: 0.8rem;
+  text-align: left;
+}
+
+.history-item:hover,
+.history-item--selected {
+  border-color: #0b69a3;
+  background: #f0f9ff;
+}
+
+.history-item time,
+.history-item__detail {
+  color: #627d98;
+  font-size: 0.8rem;
+}
+
+.history-item__detail {
+  overflow-wrap: anywhere;
+}
+
+.status-badge {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.status-badge[data-status='COMPLETED'] {
+  background: #effcf6;
+  color: #147d64;
+}
+
+.status-badge[data-status='FAILED'] {
+  background: #fff5f5;
+  color: #a61b1b;
+}
+
+.status-badge[data-status='RUNNING'] {
+  background: #fffbea;
+  color: #8d2b0b;
+}
+
+.button:focus-visible,
+.return-button:focus-visible,
+.history-item:focus-visible {
+  outline: 3px solid #84c5f4;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+}
+
+@media (max-width: 639px) {
+  .research-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .button {
+    width: 100%;
+  }
+
+  .history-item__main {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+}

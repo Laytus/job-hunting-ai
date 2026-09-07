@@ -1,0 +1,27 @@
+{
+  "name": "job-hunting-ai",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI-assisted workspace for managing a personal job search.",
+  "engines": {
+    "node": ">=24.15.0 <25",
+    "pnpm": "10.32.1"
+  },
+  "packageManager": "pnpm@10.32.1",
+  "scripts": {
+    "dev": "pnpm --parallel --filter @job-hunting-ai/api --filter @job-hunting-ai/web dev",
+    "dev:api": "pnpm --filter @job-hunting-ai/api dev",
+    "dev:web": "pnpm --filter @job-hunting-ai/web dev",
+    "lint": "pnpm --filter @job-hunting-ai/api --filter @job-hunting-ai/web lint",
+    "typecheck": "pnpm --filter @job-hunting-ai/api --filter @job-hunting-ai/web typecheck",
+    "test": "pnpm --filter @job-hunting-ai/api --filter @job-hunting-ai/web test",
+    "build": "pnpm --filter @job-hunting-ai/api --filter @job-hunting-ai/web build",
+    "validate": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "db:generate": "pnpm --filter @job-hunting-ai/api db:generate",
+    "db:migrate": "pnpm --filter @job-hunting-ai/api db:migrate",
+    "db:seed": "pnpm --filter @job-hunting-ai/api db:seed",
+    "test:db:provision": "pnpm --filter @job-hunting-ai/api test:db:provision",
+    "test:db:migrate": "pnpm --filter @job-hunting-ai/api test:db:migrate",
+    "test:db": "pnpm --filter @job-hunting-ai/api test:db"
+  }
+}

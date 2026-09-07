@@ -1,0 +1,201 @@
+@let item = research();
+
+<article class="research-result" [attr.aria-labelledby]="'research-result-' + item.id">
+  <header class="result-heading">
+    <div>
+      <p class="result-context">
+        {{ historical() ? 'Historical research' : 'Latest completed research' }}
+      </p>
+      <h4 [id]="'research-result-' + item.id">
+        @if (item.status === 'COMPLETED') {
+          Research result
+        } @else if (item.status === 'FAILED') {
+          Research failed
+        } @else {
+          Research is running
+        }
+      </h4>
+    </div>
+    <span class="status-badge" [attr.data-status]="item.status">
+      {{ item.status === 'RUNNING' ? 'Running' : item.status === 'COMPLETED' ? 'Completed' : 'Failed' }}
+    </span>
+  </header>
+
+  <p class="result-time">
+    Researched
+    <time [attr.datetime]="relevantTimestamp(item)">
+      {{ relevantTimestamp(item) | date: 'medium' }}
+    </time>
+  </p>
+
+  @if (item.status === 'RUNNING') {
+    <div class="state-panel" role="status">
+      <p>Research is running.</p>
+    </div>
+  } @else if (item.status === 'FAILED') {
+    <div class="state-panel state-panel--failed">
+      <p>{{ item.failureMessage ?? 'This Research did not complete successfully.' }}</p>
+    </div>
+  } @else {
+    @if (item.summaryMarkdown) {
+      <section class="result-section summary-section" aria-labelledby="research-summary-title">
+        <h5 id="research-summary-title">Summary</h5>
+        <app-markdown-content
+          class="summary-markdown"
+          [markdown]="item.summaryMarkdown"
+        />
+      </section>
+    }
+
+    @if (item.warnings.length > 0) {
+      <section class="result-section warning-section" aria-labelledby="research-warnings-title">
+        <h5 id="research-warnings-title">Research limitations</h5>
+        <ul class="compact-list">
+          @for (warning of item.warnings; track $index) {
+            <li>{{ warningLabel(warning) }}</li>
+          }
+        </ul>
+      </section>
+    }
+
+    @for (group of claimGroups(); track group.id) {
+      <section class="claim-group" [attr.aria-labelledby]="'research-' + group.id + '-title'">
+        <div class="group-heading">
+          <h5 [id]="'research-' + group.id + '-title'">{{ group.title }}</h5>
+          @if (group.description) {
+            <p>{{ group.description }}</p>
+          }
+        </div>
+
+        <ul class="claim-list">
+          @for (claim of group.claims; track claim.id) {
+            <li class="claim-card">
+              <header class="claim-heading">
+                <h6>{{ claimLabel(claim.type) }}</h6>
+                <div class="badge-row" aria-label="Claim classification">
+                  <span class="label-badge" [attr.data-confidence]="claim.confidence">
+                    {{ confidenceLabel(claim.confidence) }}
+                  </span>
+                  <span class="label-badge">{{ evidenceTypeLabel(claim.evidenceType) }}</span>
+                </div>
+              </header>
+
+              @if (claim.valueText) {
+                <p class="claim-value">{{ claim.valueText }}</p>
+              }
+
+              @if (claim.valueJson; as value) {
+                @if (isCompensationClaim(claim)) {
+                  <dl class="structured-metadata">
+                    @if (compensationAmount(claim); as amount) {
+                      <div><dt>Amount</dt><dd>{{ amount }}</dd></div>
+                    }
+                    @if (value.period) {
+                      <div><dt>Period</dt><dd>{{ periodLabel(value.period) }}</dd></div>
+                    }
+                    @if (value.role) {
+                      <div><dt>Role</dt><dd>{{ value.role }}</dd></div>
+                    }
+                    @if (value.location) {
+                      <div><dt>Location</dt><dd>{{ value.location }}</dd></div>
+                    }
+                    @if (value.seniority) {
+                      <div><dt>Seniority</dt><dd>{{ value.seniority }}</dd></div>
+                    }
+                    @if (value.dataYear !== null) {
+                      <div><dt>Data year</dt><dd>{{ value.dataYear }}</dd></div>
+                    }
+                  </dl>
+                }
+
+                @if (isInterviewClaim(claim)) {
+                  <dl class="structured-metadata">
+                    @if (value.stageOrder !== null) {
+                      <div><dt>Stage</dt><dd>Stage {{ value.stageOrder }}</dd></div>
+                    }
+                    @if (value.frequency) {
+                      <div><dt>Frequency</dt><dd>{{ frequencyLabel(value.frequency) }}</dd></div>
+                    }
+                  </dl>
+                }
+              }
+
+              @let supports = evidenceFor(claim.id, 'SUPPORTS');
+              @let contradicts = evidenceFor(claim.id, 'CONTRADICTS');
+              @if (supports.length > 0) {
+                <section class="evidence-section" [attr.aria-labelledby]="'supports-' + claim.id">
+                  <h6 [id]="'supports-' + claim.id">Supporting evidence</h6>
+                  <ul class="evidence-list">
+                    @for (evidence of supports; track $index) {
+                      <li>
+                        <p>{{ evidence.relationship.evidenceText }}</p>
+                        @if (evidence.source; as source) {
+                          <a [href]="source.url" target="_blank" rel="noopener noreferrer">
+                            {{ sourceName(source) }} ↗
+                          </a>
+                        }
+                      </li>
+                    }
+                  </ul>
+                </section>
+              }
+
+              @if (contradicts.length > 0) {
+                <section class="evidence-section evidence-section--contradicts" [attr.aria-labelledby]="'contradicts-' + claim.id">
+                  <h6 [id]="'contradicts-' + claim.id">Contradicting evidence</h6>
+                  <ul class="evidence-list">
+                    @for (evidence of contradicts; track $index) {
+                      <li>
+                        <p>{{ evidence.relationship.evidenceText }}</p>
+                        @if (evidence.source; as source) {
+                          <a [href]="source.url" target="_blank" rel="noopener noreferrer">
+                            {{ sourceName(source) }} ↗
+                          </a>
+                        }
+                      </li>
+                    }
+                  </ul>
+                </section>
+              }
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    @if (item.sources.length > 0) {
+      <section class="sources-section" aria-labelledby="research-sources-title">
+        <h5 id="research-sources-title">Sources</h5>
+        <ul class="source-list">
+          @for (source of item.sources; track source.id) {
+            <li class="source-card">
+              <div>
+                @if (source.title) {
+                  <h6>{{ source.title }}</h6>
+                }
+                @if (source.publisher) {
+                  <p class="source-publisher">{{ source.publisher }}</p>
+                }
+                <div class="badge-row" aria-label="Source classification">
+                  <span class="label-badge">{{ sourceTypeLabel(source.sourceType) }}</span>
+                  <span class="label-badge" [attr.data-quality]="source.sourceQuality">
+                    {{ sourceQualityLabel(source.sourceQuality) }}
+                  </span>
+                </div>
+                <div class="source-dates">
+                  @if (source.publishedAt) {
+                    <span>Published <time [attr.datetime]="source.publishedAt">{{ source.publishedAt | date: 'mediumDate': 'UTC' }}</time></span>
+                  }
+                  <span>Retrieved <time [attr.datetime]="source.retrievedAt">{{ source.retrievedAt | date: 'medium' }}</time></span>
+                </div>
+              </div>
+              <a class="source-link" [href]="source.url" target="_blank" rel="noopener noreferrer">
+                Open source ↗
+              </a>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+  }
+</article>

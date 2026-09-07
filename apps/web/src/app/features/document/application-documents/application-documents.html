@@ -1,0 +1,408 @@
+<section class="documents-section" aria-labelledby="application-documents-title">
+  <header class="documents-heading">
+    <div>
+      <p class="eyebrow">Workspace</p>
+      <h3 id="application-documents-title">Documents</h3>
+    </div>
+    @if (!loading() && !loadError()) {
+      <div class="documents-heading__actions">
+        <button class="button" type="button" (click)="startCreating()">
+          New document
+        </button>
+        <button
+          class="button button--primary"
+          type="button"
+          aria-controls="generation-options"
+          [attr.aria-expanded]="generationMenuOpen()"
+          [disabled]="generationBusy()"
+          (click)="toggleGenerationMenu()"
+        >
+          {{ generationPendingType() ? 'Generating…' : (regenerationPending() ? 'Regenerating…' : 'Generate') }}
+        </button>
+      </div>
+    }
+  </header>
+
+  @if (loading()) {
+    <div class="documents-state" role="status" aria-live="polite">
+      <span class="spinner" aria-hidden="true"></span>
+      <p>Loading documents…</p>
+    </div>
+  } @else if (loadError()) {
+    <div class="documents-state">
+      <p class="notice notice--error" role="alert">{{ loadError() }}</p>
+      <button class="button" type="button" (click)="retry()">Try again</button>
+    </div>
+  } @else {
+    @if (generationMenuOpen()) {
+      <section id="generation-options" class="generation-options" aria-labelledby="generation-options-title">
+        <header>
+          <div>
+            <p class="eyebrow">AI-assisted documents</p>
+            <h4 id="generation-options-title">Generate document</h4>
+          </div>
+          <p>Analyze and Research add context when available, but are not required.</p>
+        </header>
+
+        <div class="generation-option-grid">
+          <article class="generation-option">
+            <h5>Cover Letter</h5>
+            <p>Choose the writing language, market, and sector explicitly.</p>
+            @if (existingDocument('COVER_LETTER')) {
+              <button class="button" type="button" (click)="openExisting('COVER_LETTER')">
+                Open existing Cover Letter
+              </button>
+            } @else {
+              <div class="cover-letter-configuration" aria-label="Cover Letter settings">
+                <div class="cover-letter-profile">
+                  <label class="field profile-field" for="generate-cover-letter-language">
+                    <span>Language</span>
+                    <select
+                      #generateLanguage
+                      id="generate-cover-letter-language"
+                      [value]="generateCoverLetterLanguage() ?? ''"
+                      [disabled]="generationBusy()"
+                      (change)="selectGenerateLanguage(generateLanguage.value)"
+                    >
+                      <option value="" [selected]="generateCoverLetterLanguage() === null">Select language</option>
+                      @for (option of languageOptions; track option.value) {
+                        <option [value]="option.value" [selected]="generateCoverLetterLanguage() === option.value">{{ option.label }}</option>
+                      }
+                    </select>
+                  </label>
+
+                  <label class="field profile-field" for="generate-cover-letter-market">
+                    <span>Market</span>
+                    <select
+                      #generateMarket
+                      id="generate-cover-letter-market"
+                      aria-describedby="generate-cover-letter-market-help"
+                      [value]="generateCoverLetterMarket() ?? ''"
+                      [disabled]="generationBusy()"
+                      (change)="selectGenerateMarket(generateMarket.value)"
+                    >
+                      <option value="" [selected]="generateCoverLetterMarket() === null">Select market</option>
+                      @for (option of marketOptions; track option.value) {
+                        <option [value]="option.value" [selected]="generateCoverLetterMarket() === option.value">{{ option.label }}</option>
+                      }
+                    </select>
+                    <small id="generate-cover-letter-market-help">{{ generateMarketHint() }}</small>
+                  </label>
+
+                  <label class="field profile-field" for="generate-cover-letter-sector">
+                    <span>Sector</span>
+                    <select
+                      #generateSector
+                      id="generate-cover-letter-sector"
+                      aria-describedby="generate-cover-letter-sector-help"
+                      [value]="generateCoverLetterSector() ?? ''"
+                      [disabled]="generationBusy()"
+                      (change)="selectGenerateSector(generateSector.value)"
+                    >
+                      <option value="" [selected]="generateCoverLetterSector() === null">Select sector</option>
+                      @for (option of sectorOptions; track option.value) {
+                        <option [value]="option.value" [selected]="generateCoverLetterSector() === option.value">{{ option.label }}</option>
+                      }
+                    </select>
+                    <small id="generate-cover-letter-sector-help">{{ generateSectorHint() }}</small>
+                  </label>
+                </div>
+
+                @if (coverLetterSuggestionError()) {
+                  <div class="profile-suggestion-error">
+                    <p class="notice notice--error" role="alert">{{ coverLetterSuggestionError() }}</p>
+                    <button class="button" type="button" [disabled]="generationBusy()" (click)="retryCoverLetterSuggestion()">
+                      Retry suggestions
+                    </button>
+                  </div>
+                }
+
+                @if (!generateCoverLetterValid() && !coverLetterSuggestionLoading()) {
+                  <p class="profile-validation">Choose all three settings to generate a Cover Letter.</p>
+                }
+
+                <button
+                  id="generate-cover-letter"
+                  class="button button--primary"
+                  type="button"
+                  [disabled]="generationBusy() || !generateCoverLetterValid()"
+                  (click)="generateDocument('COVER_LETTER')"
+                >
+                  Generate Cover Letter
+                </button>
+              </div>
+            }
+          </article>
+
+          <article class="generation-option">
+            <h5>Application Brief</h5>
+            <p>Generate an English internal opportunity dossier.</p>
+            @if (existingDocument('APPLICATION_BRIEF')) {
+              <button class="button" type="button" (click)="openExisting('APPLICATION_BRIEF')">
+                Open existing Application Brief
+              </button>
+            } @else {
+              <button
+                id="generate-application-brief"
+                class="button"
+                type="button"
+                [disabled]="generationBusy()"
+                (click)="generateDocument('APPLICATION_BRIEF')"
+              >
+                Generate Application Brief
+              </button>
+            }
+          </article>
+
+          <article class="generation-option">
+            <h5>Interview Brief</h5>
+            <p>Generate an English interview-preparation guide.</p>
+            @if (existingDocument('INTERVIEW_BRIEF')) {
+              <button class="button" type="button" (click)="openExisting('INTERVIEW_BRIEF')">
+                Open existing Interview Brief
+              </button>
+            } @else {
+              <button
+                id="generate-interview-brief"
+                class="button"
+                type="button"
+                [disabled]="generationBusy()"
+                (click)="generateDocument('INTERVIEW_BRIEF')"
+              >
+                Generate Interview Brief
+              </button>
+            }
+          </article>
+        </div>
+
+        @if (generationPendingType(); as pendingType) {
+          <p class="notice notice--progress" role="status" aria-live="polite">
+            Generating {{ documentTypeLabel(pendingType) }}… Existing document work remains available.
+          </p>
+        }
+      </section>
+    }
+
+    @if (generationError()) {
+      <p class="notice notice--error" role="alert">{{ generationError() }}</p>
+    }
+
+    <div class="documents-workspace">
+      <aside class="document-browser" aria-label="Application documents">
+        @if (documents().length === 0) {
+          <div class="documents-state documents-state--empty">
+            <p>No documents yet.</p>
+          </div>
+        } @else {
+          <ul class="document-list">
+            @for (document of documents(); track document.id) {
+              <li>
+                <button
+                  class="document-card"
+                  type="button"
+                  [class.document-card--selected]="selectedDocumentId() === document.id"
+                  [attr.aria-pressed]="selectedDocumentId() === document.id"
+                  (click)="selectDocument(document.id)"
+                >
+                  <span class="document-card__content">
+                    <strong>{{ document.title }}</strong>
+                    <span class="document-type">{{ documentTypeLabel(document.type) }}</span>
+                  </span>
+                  <span class="document-card__date">
+                    Updated
+                    <time [attr.datetime]="document.updatedAt">
+                      {{ document.updatedAt | date: 'medium' }}
+                    </time>
+                  </span>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </aside>
+
+      <div class="document-workspace-panel">
+        @if (creating()) {
+          <form class="create-document-form" [formGroup]="createForm" (ngSubmit)="createDocument()">
+            <header>
+              <p class="eyebrow">New document</p>
+              <h4>Create document</h4>
+            </header>
+
+            @if (createError()) {
+              <p class="notice notice--error" role="alert">{{ createError() }}</p>
+            }
+
+            <label class="field" for="new-document-title">
+              <span>Title *</span>
+              <input id="new-document-title" type="text" formControlName="title" />
+              @if (createForm.controls.title.touched && createForm.controls.title.invalid) {
+                <small>Enter a document title.</small>
+              }
+            </label>
+
+            <label class="field" for="new-document-type">
+              <span>Type *</span>
+              <select id="new-document-type" formControlName="type">
+                @for (type of documentTypes; track type) {
+                  <option [value]="type">{{ documentTypeLabel(type) }}</option>
+                }
+              </select>
+            </label>
+
+            <label class="field" for="new-document-content">
+              <span>Initial Markdown content *</span>
+              <textarea id="new-document-content" rows="12" formControlName="contentMarkdown"></textarea>
+              @if (createForm.controls.contentMarkdown.touched && createForm.controls.contentMarkdown.invalid) {
+                <small>Enter initial document content.</small>
+              }
+            </label>
+
+            <div class="form-actions">
+              <button class="button" type="button" (click)="cancelCreating()">Cancel</button>
+              <button class="button button--primary" type="submit" [disabled]="createSaving()">
+                {{ createSaving() ? 'Creating…' : 'Create document' }}
+              </button>
+            </div>
+          </form>
+        } @else if (selectionLoading()) {
+          <div class="documents-state" role="status" aria-live="polite">
+            <span class="spinner" aria-hidden="true"></span>
+            <p>Loading document…</p>
+          </div>
+        } @else if (selectionError()) {
+          <div class="documents-state">
+            <p class="notice notice--error" role="alert">{{ selectionError() }}</p>
+            <button class="button" type="button" (click)="retrySelection()">Try again</button>
+          </div>
+        } @else if (selectedDocument(); as document) {
+          @if (selectedGenerationType(); as generatedType) {
+            <section class="regenerate-controls" aria-labelledby="regenerate-title">
+              <div>
+                <h5 id="regenerate-title">Regenerate</h5>
+                <p>Create a fresh version from current Candidate, Application, Job Description, Analyze, and Research context. Current Markdown is not sent.</p>
+              </div>
+              @if (generatedType === 'COVER_LETTER') {
+                <div class="cover-letter-configuration cover-letter-configuration--regenerate" aria-label="Regenerate Cover Letter settings">
+                  <div class="cover-letter-profile">
+                    <label class="field profile-field" for="regenerate-cover-letter-language">
+                      <span>Language</span>
+                      <select
+                        #regenerateLanguage
+                        id="regenerate-cover-letter-language"
+                        [value]="regenerateCoverLetterLanguage() ?? ''"
+                        [disabled]="generationBusy()"
+                        (change)="selectRegenerateLanguage(regenerateLanguage.value)"
+                      >
+                        <option value="" [selected]="regenerateCoverLetterLanguage() === null">Select language</option>
+                        @for (option of languageOptions; track option.value) {
+                          <option [value]="option.value" [selected]="regenerateCoverLetterLanguage() === option.value">{{ option.label }}</option>
+                        }
+                      </select>
+                    </label>
+
+                    <label class="field profile-field" for="regenerate-cover-letter-market">
+                      <span>Market</span>
+                      <select
+                        #regenerateMarket
+                        id="regenerate-cover-letter-market"
+                        aria-describedby="regenerate-cover-letter-market-help"
+                        [value]="regenerateCoverLetterMarket() ?? ''"
+                        [disabled]="generationBusy()"
+                        (change)="selectRegenerateMarket(regenerateMarket.value)"
+                      >
+                        <option value="" [selected]="regenerateCoverLetterMarket() === null">Select market</option>
+                        @for (option of marketOptions; track option.value) {
+                          <option [value]="option.value" [selected]="regenerateCoverLetterMarket() === option.value">{{ option.label }}</option>
+                        }
+                      </select>
+                      <small id="regenerate-cover-letter-market-help">{{ regenerateMarketHint() }}</small>
+                    </label>
+
+                    <label class="field profile-field" for="regenerate-cover-letter-sector">
+                      <span>Sector</span>
+                      <select
+                        #regenerateSector
+                        id="regenerate-cover-letter-sector"
+                        aria-describedby="regenerate-cover-letter-sector-help"
+                        [value]="regenerateCoverLetterSector() ?? ''"
+                        [disabled]="generationBusy()"
+                        (change)="selectRegenerateSector(regenerateSector.value)"
+                      >
+                        <option value="" [selected]="regenerateCoverLetterSector() === null">Select sector</option>
+                        @for (option of sectorOptions; track option.value) {
+                          <option [value]="option.value" [selected]="regenerateCoverLetterSector() === option.value">{{ option.label }}</option>
+                        }
+                      </select>
+                      <small id="regenerate-cover-letter-sector-help">{{ regenerateSectorHint() }}</small>
+                    </label>
+                  </div>
+
+                  @if (!regenerateUsesAdaptiveProfile() && coverLetterSuggestionError()) {
+                    <div class="profile-suggestion-error">
+                      <p class="notice notice--error" role="alert">{{ coverLetterSuggestionError() }}</p>
+                      <button class="button" type="button" [disabled]="generationBusy()" (click)="retryCoverLetterSuggestion()">
+                        Retry suggestions
+                      </button>
+                    </div>
+                  }
+
+                  @if (!regenerateCoverLetterValid() && !coverLetterSuggestionLoading()) {
+                    <p class="profile-validation">Choose all three settings to regenerate this Cover Letter.</p>
+                  }
+
+                  <button
+                    id="regenerate-cover-letter"
+                    class="button button--primary"
+                    type="button"
+                    [disabled]="generationBusy() || !regenerateCoverLetterValid()"
+                    (click)="regenerateDocument()"
+                  >
+                    Regenerate Cover Letter
+                  </button>
+                </div>
+              } @else {
+                <button
+                  id="regenerate-brief"
+                  class="button"
+                  type="button"
+                  [disabled]="generationBusy()"
+                  (click)="regenerateDocument()"
+                >
+                  Regenerate {{ documentTypeLabel(generatedType) }}
+                </button>
+              }
+            </section>
+
+            @if (regenerationPending() && regeneratingDocumentId() === document.id) {
+              <p class="notice notice--progress" role="status" aria-live="polite">
+                Regenerating {{ documentTypeLabel(generatedType) }}… The current version remains available until this completes.
+              </p>
+            }
+            @if (regenerationError()) {
+              <p class="notice notice--error" role="alert">{{ regenerationError() }}</p>
+            }
+          }
+
+          @if (generationWarnings().length > 0) {
+            <aside class="generation-warnings" aria-labelledby="generation-warnings-title">
+              <h5 id="generation-warnings-title">Generation notes</h5>
+              <p>The document was generated successfully with these limitations:</p>
+              <ul>
+                @for (warning of generationWarnings(); track warning) {
+                  <li>{{ generationWarningMessage(warning) }}</li>
+                }
+              </ul>
+            </aside>
+          }
+
+          <app-document-editor [document]="document" (saved)="documentSaved($event)" />
+        } @else {
+          <div class="documents-state documents-state--empty">
+            <p>Select a document to view or edit it.</p>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</section>

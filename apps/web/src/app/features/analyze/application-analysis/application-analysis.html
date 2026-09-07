@@ -1,0 +1,132 @@
+<section
+  #analysisSection
+  class="analysis-section"
+  aria-labelledby="application-analysis-title"
+>
+  <header class="analysis-heading">
+    <div>
+      <p class="eyebrow">Workspace</p>
+      <h3 id="application-analysis-title">Analyze</h3>
+      <p class="section-description">
+        Evaluate this application against the current Candidate Profile and Job Description.
+      </p>
+    </div>
+    <button
+      class="button button--primary"
+      type="button"
+      [disabled]="executionPending() || initialLoading()"
+      (click)="runAnalyze()"
+    >
+      {{ runButtonLabel() }}
+    </button>
+  </header>
+
+  @if (executionPending()) {
+    <p class="notice notice--progress" role="status" aria-live="polite">
+      Analyzing application… Your previous completed result remains available while this runs.
+    </p>
+  }
+
+  @if (executionError()) {
+    <div class="notice notice--error" role="alert">
+      <p>{{ executionError() }}</p>
+      @if (executionGuidance() === 'candidate' || executionGuidance() === 'source-context') {
+        <a routerLink="/candidate">Open Candidate Profile</a>
+      }
+      @if (executionGuidance() === 'job-description' || executionGuidance() === 'source-context') {
+        <a href="#job-description-title">Go to Job Description</a>
+      }
+    </div>
+  }
+
+  @if (initialLoading()) {
+    <div class="analysis-state" role="status" aria-live="polite">
+      <span class="spinner" aria-hidden="true"></span>
+      <p>Loading Analyze results…</p>
+    </div>
+  } @else if (loadError()) {
+    <div class="analysis-state">
+      <p class="notice notice--error" role="alert">{{ loadError() }}</p>
+      <button class="button button--secondary" type="button" (click)="retryInitialLoad()">
+        Try again
+      </button>
+    </div>
+  } @else {
+    @if (viewingHistorical() && latestCompleted() !== null) {
+      <button class="return-button" type="button" (click)="returnToLatest()">
+        ← Return to latest analysis
+      </button>
+    }
+
+    @if (detailLoading()) {
+      <p class="detail-state" role="status" aria-live="polite">Loading selected analysis…</p>
+    }
+
+    @if (detailError()) {
+      <p class="notice notice--error" role="alert">{{ detailError() }}</p>
+    }
+
+    @if (displayedAnalysis(); as analysis) {
+      <app-analyze-result
+        [analysis]="analysis"
+        [historical]="viewingHistorical()"
+      />
+    } @else if (!detailLoading()) {
+      <div class="analysis-state analysis-state--empty">
+        <h4>{{ history().length === 0 ? 'No analysis yet.' : 'No completed analysis yet.' }}</h4>
+        <p>
+          Run Analyze to evaluate this application against the current Candidate Profile and Job Description.
+        </p>
+      </div>
+    }
+
+    <section class="history-section" aria-labelledby="analyze-history-title">
+      <div class="history-heading">
+        <h4 id="analyze-history-title">Analyze history</h4>
+        @if (historyLoading()) {
+          <span role="status" aria-live="polite">Refreshing…</span>
+        }
+      </div>
+
+      @if (historyError()) {
+        <p class="notice notice--error" role="alert">{{ historyError() }}</p>
+      }
+
+      @if (history().length === 0) {
+        <p class="history-empty">No Analyze runs yet.</p>
+      } @else {
+        <ol class="history-list" aria-label="Analyze history, newest first">
+          @for (item of history(); track item.id) {
+            <li>
+              <button
+                class="history-item"
+                type="button"
+                [class.history-item--selected]="selectedAnalysisId() === item.id"
+                [attr.aria-pressed]="selectedAnalysisId() === item.id"
+                (click)="selectAnalysis(item.id)"
+              >
+                <span class="history-item__main">
+                  <span class="status-badge" [attr.data-status]="item.status">
+                    {{ statusLabel(item.status) }}
+                  </span>
+                  <time [attr.datetime]="historyTimestamp(item)">
+                    {{ historyTimestamp(item) | date: 'medium' }}
+                  </time>
+                </span>
+                <span class="history-item__detail">
+                  @if (item.status === 'COMPLETED') {
+                    {{ item.suggestedScore === null ? 'Score not evaluable' : 'Suggested score ' + item.suggestedScore + '/100' }}
+                  } @else if (item.status === 'FAILED') {
+                    {{ item.failureMessage ?? 'Analysis did not complete' }}
+                  } @else {
+                    Analysis in progress
+                  }
+                </span>
+              </button>
+            </li>
+          }
+        </ol>
+      }
+    </section>
+  }
+</section>

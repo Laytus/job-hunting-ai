@@ -1,0 +1,76 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1787251986676,
+      "tag": "0000_short_tusk",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1787348085479,
+      "tag": "0001_cold_golden_guardian",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1787366101614,
+      "tag": "0002_lumpy_zarda",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1787371664564,
+      "tag": "0003_spooky_layla_miller",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1787420032223,
+      "tag": "0004_clear_quicksilver",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1787430970525,
+      "tag": "0005_overrated_invaders",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1787685874510,
+      "tag": "0006_soft_colonel_america",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1787698321568,
+      "tag": "0007_overconfident_gorgon",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1787777660637,
+      "tag": "0008_fearless_bloodstorm",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1787946430888,
+      "tag": "0009_burly_stone_men",
+      "breakpoints": true
+    }
+  ]
+}

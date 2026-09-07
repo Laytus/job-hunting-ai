@@ -1,0 +1,447 @@
+<section class="candidate-page" aria-labelledby="candidate-title">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">Candidate context</p>
+      <h2 id="candidate-title">Candidate profile</h2>
+      <p class="page-intro">
+        Keep the experience and evidence used throughout your job search in one place.
+      </p>
+    </div>
+
+    @if (candidate() && !editing() && !loading()) {
+      <button class="button button--primary" type="button" (click)="startEditing()">
+        Edit profile
+      </button>
+    }
+  </header>
+
+  @if (successMessage()) {
+    <p class="notice notice--success" role="status">{{ successMessage() }}</p>
+  }
+
+  @if (loading()) {
+    <div class="state-card" role="status" aria-live="polite">
+      <span class="spinner" aria-hidden="true"></span>
+      <p>Loading candidate profile…</p>
+    </div>
+  } @else if (loadError()) {
+    <div class="state-card">
+      <h3>Candidate profile unavailable</h3>
+      <p class="notice notice--error" role="alert">{{ loadError() }}</p>
+      <button class="button button--secondary" type="button" (click)="loadCandidate()">
+        Try again
+      </button>
+    </div>
+  } @else if (editing()) {
+    <form class="candidate-form" [formGroup]="candidateForm" (ngSubmit)="saveCandidate()">
+      @if (saveError()) {
+        <p class="notice notice--error" role="alert">{{ saveError() }}</p>
+      }
+
+      <fieldset class="form-section">
+        <legend>Profile</legend>
+        <div class="field-grid">
+          <label class="field field--wide" for="full-name">
+            <span>Full name <span aria-hidden="true">*</span></span>
+            <input id="full-name" type="text" formControlName="fullName" autocomplete="name" />
+            @if (candidateForm.controls.fullName.touched && candidateForm.controls.fullName.invalid) {
+              <small>Enter a full name.</small>
+            }
+          </label>
+
+          <label class="field" for="headline">
+            <span>Headline</span>
+            <input id="headline" type="text" formControlName="headline" />
+          </label>
+
+          <label class="field" for="candidate-location">
+            <span>Location</span>
+            <input id="candidate-location" type="text" formControlName="location" autocomplete="address-level2" />
+          </label>
+
+          <label class="field" for="linkedin-url">
+            <span>LinkedIn URL</span>
+            <input id="linkedin-url" type="url" formControlName="linkedinUrl" inputmode="url" />
+            @if (candidateForm.controls.linkedinUrl.touched && candidateForm.controls.linkedinUrl.invalid) {
+              <small>Use a complete HTTP or HTTPS URL.</small>
+            }
+          </label>
+
+          <label class="field" for="github-url">
+            <span>GitHub URL</span>
+            <input id="github-url" type="url" formControlName="githubUrl" inputmode="url" />
+            @if (candidateForm.controls.githubUrl.touched && candidateForm.controls.githubUrl.invalid) {
+              <small>Use a complete HTTP or HTTPS URL.</small>
+            }
+          </label>
+
+          <label class="field" for="portfolio-url">
+            <span>Portfolio URL</span>
+            <input id="portfolio-url" type="url" formControlName="portfolioUrl" inputmode="url" />
+            @if (candidateForm.controls.portfolioUrl.touched && candidateForm.controls.portfolioUrl.invalid) {
+              <small>Use a complete HTTP or HTTPS URL.</small>
+            }
+          </label>
+
+          <label class="field" for="target-roles">
+            <span>Target roles</span>
+            <input id="target-roles" type="text" formControlName="targetRolesText" aria-describedby="target-roles-help" />
+            <small id="target-roles-help">Separate values with commas.</small>
+          </label>
+
+          <label class="field" for="target-locations">
+            <span>Target locations</span>
+            <input id="target-locations" type="text" formControlName="targetLocationsText" aria-describedby="target-locations-help" />
+            <small id="target-locations-help">Separate values with commas.</small>
+          </label>
+
+          <label class="field field--wide" for="summary">
+            <span>Summary (Markdown)</span>
+            <textarea id="summary" rows="5" formControlName="summaryMarkdown"></textarea>
+          </label>
+
+          <label class="field field--wide" for="career-goals">
+            <span>Career goals (Markdown)</span>
+            <textarea id="career-goals" rows="4" formControlName="careerGoalsMarkdown"></textarea>
+          </label>
+
+          <label class="field field--wide" for="cv-markdown">
+            <span>CV (Markdown)</span>
+            <textarea id="cv-markdown" rows="8" formControlName="cvMarkdown"></textarea>
+          </label>
+
+          <label class="field field--wide" for="additional-context">
+            <span>Additional context</span>
+            <textarea id="additional-context" rows="4" formControlName="additionalContext"></textarea>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset class="form-section" formArrayName="experiences">
+        <legend>Experience</legend>
+        <div class="section-toolbar">
+          <p>Roles and responsibilities, ordered explicitly.</p>
+          <button class="button button--secondary" type="button" (click)="addExperience()">Add experience</button>
+        </div>
+        @for (group of experiences.controls; track group; let index = $index) {
+          <div class="form-card" [formGroupName]="index">
+            <div class="form-card__heading">
+              <h3>Experience {{ index + 1 }}</h3>
+              <button class="button button--danger" type="button" (click)="removeExperience(index)" [attr.aria-label]="'Remove experience ' + (index + 1)">Remove</button>
+            </div>
+            <div class="field-grid">
+              <label class="field" [for]="'experience-organization-' + index">
+                <span>Organization *</span>
+                <input [id]="'experience-organization-' + index" type="text" formControlName="organization" />
+              </label>
+              <label class="field" [for]="'experience-role-' + index">
+                <span>Role *</span>
+                <input [id]="'experience-role-' + index" type="text" formControlName="role" />
+              </label>
+              <label class="field" [for]="'experience-location-' + index">
+                <span>Location</span>
+                <input [id]="'experience-location-' + index" type="text" formControlName="location" />
+              </label>
+              <label class="field" [for]="'experience-sort-' + index">
+                <span>Sort order *</span>
+                <input [id]="'experience-sort-' + index" type="number" min="0" formControlName="sortOrder" />
+              </label>
+              <label class="field" [for]="'experience-start-' + index">
+                <span>Start date *</span>
+                <input [id]="'experience-start-' + index" type="date" formControlName="startDate" />
+              </label>
+              <label class="field" [for]="'experience-end-' + index">
+                <span>End date</span>
+                <input [id]="'experience-end-' + index" type="date" formControlName="endDate" />
+              </label>
+              <label class="field field--wide" [for]="'experience-description-' + index">
+                <span>Description (Markdown)</span>
+                <textarea [id]="'experience-description-' + index" rows="4" formControlName="descriptionMarkdown"></textarea>
+              </label>
+            </div>
+          </div>
+        } @empty {
+          <p class="empty-collection">No experience entries.</p>
+        }
+      </fieldset>
+
+      <fieldset class="form-section" formArrayName="education">
+        <legend>Education</legend>
+        <div class="section-toolbar">
+          <p>Formal education and qualifications.</p>
+          <button class="button button--secondary" type="button" (click)="addEducation()">Add education</button>
+        </div>
+        @for (group of education.controls; track group; let index = $index) {
+          <div class="form-card" [formGroupName]="index">
+            <div class="form-card__heading">
+              <h3>Education {{ index + 1 }}</h3>
+              <button class="button button--danger" type="button" (click)="removeEducation(index)" [attr.aria-label]="'Remove education ' + (index + 1)">Remove</button>
+            </div>
+            <div class="field-grid">
+              <label class="field" [for]="'education-institution-' + index">
+                <span>Institution *</span>
+                <input [id]="'education-institution-' + index" type="text" formControlName="institution" />
+              </label>
+              <label class="field" [for]="'education-degree-' + index">
+                <span>Degree *</span>
+                <input [id]="'education-degree-' + index" type="text" formControlName="degree" />
+              </label>
+              <label class="field" [for]="'education-field-' + index">
+                <span>Field of study</span>
+                <input [id]="'education-field-' + index" type="text" formControlName="fieldOfStudy" />
+              </label>
+              <label class="field" [for]="'education-location-' + index">
+                <span>Location</span>
+                <input [id]="'education-location-' + index" type="text" formControlName="location" />
+              </label>
+              <label class="field" [for]="'education-start-' + index">
+                <span>Start date *</span>
+                <input [id]="'education-start-' + index" type="date" formControlName="startDate" />
+              </label>
+              <label class="field" [for]="'education-end-' + index">
+                <span>End date</span>
+                <input [id]="'education-end-' + index" type="date" formControlName="endDate" />
+              </label>
+              <label class="field" [for]="'education-sort-' + index">
+                <span>Sort order *</span>
+                <input [id]="'education-sort-' + index" type="number" min="0" formControlName="sortOrder" />
+              </label>
+              <label class="field field--wide" [for]="'education-description-' + index">
+                <span>Description (Markdown)</span>
+                <textarea [id]="'education-description-' + index" rows="4" formControlName="descriptionMarkdown"></textarea>
+              </label>
+            </div>
+          </div>
+        } @empty {
+          <p class="empty-collection">No education entries.</p>
+        }
+      </fieldset>
+
+      <fieldset class="form-section" formArrayName="projects">
+        <legend>Projects</legend>
+        <div class="section-toolbar">
+          <p>Selected work and its supporting technologies.</p>
+          <button class="button button--secondary" type="button" (click)="addProject()">Add project</button>
+        </div>
+        @for (group of projects.controls; track group; let index = $index) {
+          <div class="form-card" [formGroupName]="index">
+            <div class="form-card__heading">
+              <h3>Project {{ index + 1 }}</h3>
+              <button class="button button--danger" type="button" (click)="removeProject(index)" [attr.aria-label]="'Remove project ' + (index + 1)">Remove</button>
+            </div>
+            <div class="field-grid">
+              <label class="field" [for]="'project-name-' + index">
+                <span>Name *</span>
+                <input [id]="'project-name-' + index" type="text" formControlName="name" />
+              </label>
+              <label class="field" [for]="'project-role-' + index">
+                <span>Role</span>
+                <input [id]="'project-role-' + index" type="text" formControlName="role" />
+              </label>
+              <label class="field" [for]="'project-url-' + index">
+                <span>Project URL</span>
+                <input [id]="'project-url-' + index" type="url" formControlName="projectUrl" />
+              </label>
+              <label class="field" [for]="'project-repository-' + index">
+                <span>Repository URL</span>
+                <input [id]="'project-repository-' + index" type="url" formControlName="repositoryUrl" />
+              </label>
+              <label class="field" [for]="'project-start-' + index">
+                <span>Start date</span>
+                <input [id]="'project-start-' + index" type="date" formControlName="startDate" />
+              </label>
+              <label class="field" [for]="'project-end-' + index">
+                <span>End date</span>
+                <input [id]="'project-end-' + index" type="date" formControlName="endDate" />
+              </label>
+              <label class="field" [for]="'project-technologies-' + index">
+                <span>Technologies</span>
+                <input [id]="'project-technologies-' + index" type="text" formControlName="technologiesText" />
+                <small>Separate values with commas.</small>
+              </label>
+              <label class="field" [for]="'project-sort-' + index">
+                <span>Sort order *</span>
+                <input [id]="'project-sort-' + index" type="number" min="0" formControlName="sortOrder" />
+              </label>
+              <label class="field field--wide" [for]="'project-description-' + index">
+                <span>Description (Markdown)</span>
+                <textarea [id]="'project-description-' + index" rows="4" formControlName="descriptionMarkdown"></textarea>
+              </label>
+            </div>
+          </div>
+        } @empty {
+          <p class="empty-collection">No projects.</p>
+        }
+      </fieldset>
+
+      <fieldset class="form-section" formArrayName="skills">
+        <legend>Skills</legend>
+        <div class="section-toolbar">
+          <p>Capabilities that support your target roles.</p>
+          <button class="button button--secondary" type="button" (click)="addSkill()">Add skill</button>
+        </div>
+        @for (group of skills.controls; track group; let index = $index) {
+          <div class="form-card" [formGroupName]="index">
+            <div class="form-card__heading">
+              <h3>Skill {{ index + 1 }}</h3>
+              <button class="button button--danger" type="button" (click)="removeSkill(index)" [attr.aria-label]="'Remove skill ' + (index + 1)">Remove</button>
+            </div>
+            <div class="field-grid">
+              <label class="field" [for]="'skill-name-' + index">
+                <span>Name *</span>
+                <input [id]="'skill-name-' + index" type="text" formControlName="name" />
+              </label>
+              <label class="field" [for]="'skill-category-' + index">
+                <span>Category *</span>
+                <select [id]="'skill-category-' + index" formControlName="category">
+                  @for (category of skillCategories; track category) {
+                    <option [value]="category">{{ category }}</option>
+                  }
+                </select>
+              </label>
+              <label class="field" [for]="'skill-level-' + index">
+                <span>Level</span>
+                <select [id]="'skill-level-' + index" formControlName="level">
+                  <option [ngValue]="null">Not specified</option>
+                  @for (level of skillLevels; track level) {
+                    <option [value]="level">{{ level }}</option>
+                  }
+                </select>
+              </label>
+              <label class="field" [for]="'skill-sort-' + index">
+                <span>Sort order *</span>
+                <input [id]="'skill-sort-' + index" type="number" min="0" formControlName="sortOrder" />
+              </label>
+              <label class="field field--wide" [for]="'skill-notes-' + index">
+                <span>Notes</span>
+                <textarea [id]="'skill-notes-' + index" rows="3" formControlName="notes"></textarea>
+              </label>
+            </div>
+          </div>
+        } @empty {
+          <p class="empty-collection">No skills.</p>
+        }
+      </fieldset>
+
+      <fieldset class="form-section" formArrayName="languages">
+        <legend>Languages</legend>
+        <div class="section-toolbar">
+          <p>Spoken languages, proficiency, and certifications.</p>
+          <button class="button button--secondary" type="button" (click)="addLanguage()">Add language</button>
+        </div>
+        @for (group of languages.controls; track group; let index = $index) {
+          <div class="form-card" [formGroupName]="index">
+            <div class="form-card__heading">
+              <h3>Language {{ index + 1 }}</h3>
+              <button class="button button--danger" type="button" (click)="removeLanguage(index)" [attr.aria-label]="'Remove language ' + (index + 1)">Remove</button>
+            </div>
+            <div class="field-grid">
+              <label class="field" [for]="'language-name-' + index">
+                <span>Language *</span>
+                <input [id]="'language-name-' + index" type="text" formControlName="language" />
+              </label>
+              <label class="field" [for]="'language-level-' + index">
+                <span>Level *</span>
+                <input [id]="'language-level-' + index" type="text" formControlName="level" />
+              </label>
+              <label class="field" [for]="'language-certification-' + index">
+                <span>Certification</span>
+                <input [id]="'language-certification-' + index" type="text" formControlName="certification" />
+              </label>
+              <label class="field" [for]="'language-sort-' + index">
+                <span>Sort order *</span>
+                <input [id]="'language-sort-' + index" type="number" min="0" formControlName="sortOrder" />
+              </label>
+              <label class="field field--wide" [for]="'language-notes-' + index">
+                <span>Notes</span>
+                <textarea [id]="'language-notes-' + index" rows="3" formControlName="notes"></textarea>
+              </label>
+            </div>
+          </div>
+        } @empty {
+          <p class="empty-collection">No languages.</p>
+        }
+      </fieldset>
+
+      <div class="form-actions">
+        <button class="button button--secondary" type="button" (click)="cancelEditing()" [disabled]="saving()">Cancel</button>
+        <button class="button button--primary" type="submit" [disabled]="saving()">
+          {{ saving() ? 'Saving…' : 'Save profile' }}
+        </button>
+      </div>
+    </form>
+  } @else if (candidate(); as profile) {
+    <article class="profile-view">
+      <section class="profile-card profile-card--hero">
+        <p class="eyebrow">Profile</p>
+        <h3>{{ profile.fullName }}</h3>
+        @if (profile.headline) { <p class="headline">{{ profile.headline }}</p> }
+        @if (profile.location) { <p>{{ profile.location }}</p> }
+        <div class="link-list">
+          @if (profile.linkedinUrl) { <a [href]="profile.linkedinUrl" target="_blank" rel="noreferrer">LinkedIn</a> }
+          @if (profile.githubUrl) { <a [href]="profile.githubUrl" target="_blank" rel="noreferrer">GitHub</a> }
+          @if (profile.portfolioUrl) { <a [href]="profile.portfolioUrl" target="_blank" rel="noreferrer">Portfolio</a> }
+        </div>
+        @if (profile.summaryMarkdown) { <p class="preserve-lines">{{ profile.summaryMarkdown }}</p> }
+        <p class="updated-at">Context updated {{ profile.candidateContextUpdatedAt | date: 'medium' }}</p>
+      </section>
+
+      <section class="profile-card">
+        <h3>Experience</h3>
+        @for (experience of profile.experiences; track experience.id) {
+          <div class="profile-entry">
+            <h4>{{ experience.role }} · {{ experience.organization }}</h4>
+            <p>{{ experience.startDate }} – {{ experience.endDate ?? 'Present' }}</p>
+            @if (experience.descriptionMarkdown) { <p class="preserve-lines">{{ experience.descriptionMarkdown }}</p> }
+          </div>
+        } @empty { <p>No experience added.</p> }
+      </section>
+
+      <section class="profile-card">
+        <h3>Education</h3>
+        @for (item of profile.education; track item.id) {
+          <div class="profile-entry">
+            <h4>{{ item.degree }} · {{ item.institution }}</h4>
+            <p>{{ item.startDate }} – {{ item.endDate ?? 'Present' }}</p>
+          </div>
+        } @empty { <p>No education added.</p> }
+      </section>
+
+      <section class="profile-card">
+        <h3>Projects</h3>
+        @for (project of profile.projects; track project.id) {
+          <div class="profile-entry">
+            <h4>{{ project.name }}</h4>
+            @if (project.descriptionMarkdown) { <p class="preserve-lines">{{ project.descriptionMarkdown }}</p> }
+            @if (project.technologies.length) { <p>{{ project.technologies.join(' · ') }}</p> }
+          </div>
+        } @empty { <p>No projects added.</p> }
+      </section>
+
+      <section class="profile-card">
+        <h3>Skills</h3>
+        <ul class="tag-list">
+          @for (skill of profile.skills; track skill.id) {
+            <li>{{ skill.name }}@if (skill.level) { · {{ skill.level }}}</li>
+          } @empty { <li>No skills added.</li> }
+        </ul>
+      </section>
+
+      <section class="profile-card">
+        <h3>Languages</h3>
+        <ul class="tag-list">
+          @for (language of profile.languages; track language.id) {
+            <li>{{ language.language }} · {{ language.level }}</li>
+          } @empty { <li>No languages added.</li> }
+        </ul>
+      </section>
+    </article>
+  } @else {
+    <div class="state-card state-card--empty">
+      <p class="eyebrow">Start here</p>
+      <h3>No candidate profile yet</h3>
+      <p>Add your background once so future application workflows can use consistent context.</p>
+      <button class="button button--primary" type="button" (click)="startCreating()">Create candidate profile</button>
+    </div>
+  }
+</section>

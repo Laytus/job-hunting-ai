@@ -1,0 +1,117 @@
+<section class="document-editor" aria-labelledby="document-editor-title">
+  <header class="editor-heading">
+    <div>
+      <p class="eyebrow">Selected document</p>
+      <h4 id="document-editor-title">{{ document().title }}</h4>
+    </div>
+  </header>
+
+  <form class="editor-form" [formGroup]="metadataForm" (ngSubmit)="saveMetadata()">
+    <fieldset>
+      <legend>Document details</legend>
+
+      @if (metadataError()) {
+        <p class="notice notice--error" role="alert">{{ metadataError() }}</p>
+      }
+      @if (metadataSuccess()) {
+        <p class="notice notice--success" role="status">{{ metadataSuccess() }}</p>
+      }
+
+      <div class="field-grid">
+        <label class="field" for="document-title">
+          <span>Title *</span>
+          <input id="document-title" type="text" formControlName="title" />
+          @if (metadataForm.controls.title.touched && metadataForm.controls.title.invalid) {
+            <small>Enter a document title.</small>
+          }
+        </label>
+
+        <label class="field" for="document-type">
+          <span>Type *</span>
+          <select id="document-type" formControlName="type">
+            @for (type of documentTypes; track type) {
+              <option [value]="type">{{ documentTypeLabel(type) }}</option>
+            }
+          </select>
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button id="save-document-details" class="button button--primary" type="submit" [disabled]="metadataSaving()">
+          {{ metadataSaving() ? 'Saving details…' : 'Save document details' }}
+        </button>
+      </div>
+    </fieldset>
+  </form>
+
+  <form class="editor-form" [formGroup]="contentForm" (ngSubmit)="saveContent()">
+    <fieldset>
+      <legend>Markdown content</legend>
+      <p class="field-help">Saving content creates a new document version.</p>
+
+      @if (contentError()) {
+        <p class="notice notice--error" role="alert">{{ contentError() }}</p>
+      }
+      @if (contentSuccess()) {
+        <p class="notice notice--success" role="status">{{ contentSuccess() }}</p>
+      }
+
+      <div class="editor-pane-toggle" role="group" aria-label="Document content view">
+        <button
+          type="button"
+          [class.editor-pane-toggle__button--active]="activePane() === 'edit'"
+          [attr.aria-pressed]="activePane() === 'edit'"
+          (click)="showPane('edit')"
+        >
+          Edit
+        </button>
+        <button
+          type="button"
+          [class.editor-pane-toggle__button--active]="activePane() === 'preview'"
+          [attr.aria-pressed]="activePane() === 'preview'"
+          (click)="showPane('preview')"
+        >
+          Preview
+        </button>
+      </div>
+
+      <div class="content-workspace" [attr.data-active-pane]="activePane()">
+        <label
+          class="field editor-pane editor-pane--edit"
+          for="document-content"
+          [hidden]="activePane() !== 'edit'"
+        >
+          <span>Markdown *</span>
+          <textarea id="document-content" rows="18" formControlName="contentMarkdown"></textarea>
+          @if (contentForm.controls.contentMarkdown.touched && contentForm.controls.contentMarkdown.invalid) {
+            <small>Enter document content.</small>
+          }
+        </label>
+
+        <section
+          class="markdown-preview editor-pane editor-pane--preview"
+          aria-labelledby="document-preview-title"
+          [hidden]="activePane() !== 'preview'"
+        >
+          <h5 id="document-preview-title">Preview</h5>
+          <app-markdown-content
+            [markdown]="previewMarkdown()"
+            [documentType]="document().type"
+          />
+        </section>
+      </div>
+
+      <div class="form-actions">
+        <button id="save-document-version" class="button button--primary" type="submit" [disabled]="contentSaving()">
+          {{ contentSaving() ? 'Saving version…' : 'Save as new version' }}
+        </button>
+      </div>
+    </fieldset>
+  </form>
+
+  <app-document-version-history
+    [documentId]="document().id"
+    [currentVersionId]="document().currentVersionId"
+    (restored)="versionRestored($event)"
+  />
+</section>

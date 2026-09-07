@@ -1,0 +1,260 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.research-result,
+.claim-group,
+.claim-card,
+.evidence-section,
+.sources-section,
+.source-card > div {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.result-heading,
+.claim-heading,
+.source-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.result-heading h4,
+.result-heading p,
+.result-section h5,
+.claim-group h5,
+.claim-card h6,
+.evidence-section h6,
+.sources-section h5,
+.source-card h6,
+.source-card p,
+.result-time,
+.state-panel p,
+.group-heading p,
+.claim-value,
+.evidence-list p {
+  margin: 0;
+}
+
+.result-heading h4 {
+  margin-top: 0.2rem;
+  color: #102a43;
+  font-size: 1.2rem;
+}
+
+.result-context,
+.result-time,
+.source-publisher,
+.source-dates {
+  color: #627d98;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.result-context {
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.status-badge,
+.label-badge {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.status-badge[data-status='COMPLETED'],
+.label-badge[data-confidence='HIGH'],
+.label-badge[data-quality='HIGH'] {
+  background: #effcf6;
+  color: #147d64;
+}
+
+.status-badge[data-status='FAILED'],
+.label-badge[data-confidence='LOW'],
+.label-badge[data-quality='LOW'] {
+  background: #fff5f5;
+  color: #a61b1b;
+}
+
+.status-badge[data-status='RUNNING'],
+.label-badge[data-confidence='MEDIUM'],
+.label-badge[data-quality='MEDIUM'] {
+  background: #fffbea;
+  color: #8d2b0b;
+}
+
+.result-section,
+.claim-group,
+.state-panel,
+.sources-section {
+  border: 1px solid #d9e2ec;
+  border-radius: 0.75rem;
+  background: #f8fafc;
+  padding: 1rem;
+}
+
+.result-section h5,
+.claim-group h5,
+.sources-section h5 {
+  color: #102a43;
+  font-size: 1rem;
+}
+
+.summary-markdown,
+.claim-value,
+.state-panel p,
+.group-heading p,
+.evidence-list p {
+  color: #486581;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.warning-section {
+  border-color: #fadb5f;
+  background: #fffbea;
+}
+
+.state-panel--failed {
+  border-color: #f7c1c1;
+  background: #fff5f5;
+}
+
+.group-heading {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.claim-list,
+.evidence-list,
+.source-list {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.claim-card,
+.source-card {
+  border: 1px solid #d9e2ec;
+  border-radius: 0.65rem;
+  background: #fff;
+  padding: 0.9rem;
+}
+
+.claim-card h6,
+.source-card h6,
+.evidence-section h6 {
+  color: #243b53;
+  font-size: 0.95rem;
+}
+
+.badge-row,
+.source-dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.label-badge {
+  background: #e6f6ff;
+  color: #035388;
+}
+
+.structured-metadata {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+  border-radius: 0.55rem;
+  background: #f0f4f8;
+  padding: 0.8rem;
+}
+
+.structured-metadata div {
+  min-width: 0;
+}
+
+.structured-metadata dt {
+  color: #627d98;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.structured-metadata dd {
+  margin: 0.2rem 0 0;
+  color: #243b53;
+  overflow-wrap: anywhere;
+}
+
+.evidence-section {
+  gap: 0.55rem;
+  border-left: 0.2rem solid #3ebd93;
+  padding-left: 0.8rem;
+}
+
+.evidence-section--contradicts {
+  border-left-color: #e66a6a;
+}
+
+.evidence-list li {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.evidence-list a,
+.source-link {
+  width: fit-content;
+  max-width: 100%;
+  color: #035388;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+  text-underline-offset: 0.2em;
+}
+
+.compact-list {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding-left: 1.25rem;
+  color: #486581;
+  line-height: 1.5;
+}
+
+.source-card {
+  align-items: center;
+}
+
+.source-dates {
+  gap: 0.35rem 0.75rem;
+}
+
+.evidence-list a:focus-visible,
+.source-link:focus-visible {
+  outline: 3px solid #84c5f4;
+  outline-offset: 2px;
+}
+
+@media (max-width: 639px) {
+  .result-heading,
+  .claim-heading,
+  .source-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .structured-metadata {
+    grid-template-columns: 1fr;
+  }
+}

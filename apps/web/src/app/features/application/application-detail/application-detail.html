@@ -1,0 +1,419 @@
+<section class="application-detail" aria-labelledby="application-title">
+  <a class="back-link" routerLink="/applications">← Back to applications</a>
+
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">{{ createMode() ? 'New opportunity' : 'Application details' }}</p>
+      <h2 id="application-title">
+        {{ createMode() ? 'Add application' : (application()?.companyName ?? 'Application') }}
+      </h2>
+      <p>
+        {{ createMode() ? 'Capture the opportunity and its current state.' : 'Keep this opportunity current as it progresses.' }}
+      </p>
+    </div>
+  </header>
+
+  @if (successMessage()) {
+    <p class="notice notice--success" role="status">{{ successMessage() }}</p>
+  }
+
+  @if (loading()) {
+    <div class="state-card" role="status" aria-live="polite">
+      <span class="spinner" aria-hidden="true"></span>
+      <p>Loading application…</p>
+    </div>
+  } @else if (loadError()) {
+    <div class="state-card">
+      <h3>Application unavailable</h3>
+      <p class="notice notice--error" role="alert">{{ loadError() }}</p>
+      <button class="button button--secondary" type="button" (click)="loadApplication()">Try again</button>
+    </div>
+  } @else {
+    @if (!createMode()) {
+      <nav class="workspace-navigation" aria-label="Application workspace sections">
+        <div class="workspace-navigation__desktop">
+          @for (section of workspaceSections; track section.id) {
+            <button
+              type="button"
+              [class.workspace-navigation__button--active]="selectedWorkspaceSection() === section.id"
+              (click)="scrollToWorkspaceSection(section.id)"
+            >
+              {{ section.label }}
+            </button>
+          }
+        </div>
+
+        <label class="workspace-navigation__mobile" for="workspace-section-select">
+          <span>Jump to</span>
+          <select
+            #workspaceSectionSelect
+            id="workspace-section-select"
+            [value]="selectedWorkspaceSection()"
+            (change)="selectWorkspaceSection(workspaceSectionSelect.value)"
+          >
+            @for (section of workspaceSections; track section.id) {
+              <option [value]="section.id">{{ section.label }}</option>
+            }
+          </select>
+        </label>
+      </nav>
+    }
+
+    <form id="overview" class="application-form workspace-anchor" [formGroup]="applicationForm" (ngSubmit)="saveApplication()">
+      @if (saveError()) {
+        <p class="notice notice--error" role="alert">{{ saveError() }}</p>
+      }
+
+      <fieldset class="form-section">
+        <legend>Overview</legend>
+        <div class="field-grid">
+          <label class="field" for="company-name">
+            <span>Company name *</span>
+            <input id="company-name" type="text" formControlName="companyName" autocomplete="organization" />
+            @if (applicationForm.controls.companyName.touched && applicationForm.controls.companyName.invalid) {
+              <small>Enter a company name.</small>
+            }
+          </label>
+
+          <label class="field" for="role-title">
+            <span>Role title *</span>
+            <input id="role-title" type="text" formControlName="roleTitle" autocomplete="organization-title" />
+            @if (applicationForm.controls.roleTitle.touched && applicationForm.controls.roleTitle.invalid) {
+              <small>Enter a role title.</small>
+            }
+          </label>
+
+          <label class="field" for="application-location">
+            <span>Location</span>
+            <input id="application-location" type="text" formControlName="location" />
+          </label>
+
+          <label class="field" for="job-url">
+            <span>Job URL</span>
+            <input id="job-url" type="url" inputmode="url" formControlName="jobUrl" />
+            @if (applicationForm.controls.jobUrl.touched && applicationForm.controls.jobUrl.invalid) {
+              <small>Use a complete HTTP or HTTPS URL.</small>
+            }
+          </label>
+
+          <label class="field" for="application-source">
+            <span>Source</span>
+            <select id="application-source" formControlName="source">
+              @for (source of sources; track source) {
+                <option [value]="source">{{ source }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="field" for="application-status">
+            <span>Status</span>
+            <select id="application-status" formControlName="status">
+              @for (status of statuses; track status) {
+                <option [value]="status">{{ status }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="field" for="application-priority">
+            <span>Priority</span>
+            <select id="application-priority" formControlName="priority">
+              @for (priority of priorities; track priority) {
+                <option [value]="priority">{{ priority }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="field" for="date-found">
+            <span>Date found</span>
+            <input id="date-found" type="date" formControlName="dateFound" />
+            @if (applicationForm.controls.dateFound.touched && applicationForm.controls.dateFound.invalid) {
+              <small>Enter a valid date.</small>
+            }
+          </label>
+
+          <label class="field" for="date-applied">
+            <span>Date applied</span>
+            <input id="date-applied" type="date" formControlName="dateApplied" />
+            @if (applicationForm.controls.dateApplied.touched && applicationForm.controls.dateApplied.invalid) {
+              <small>Enter a valid date.</small>
+            } @else if (applicationForm.hasError('dateOrder') && applicationForm.controls.dateApplied.touched) {
+              <small>Date applied must be on or after date found.</small>
+            }
+          </label>
+
+          <label class="field field--wide" for="application-notes">
+            <span>Notes (Markdown)</span>
+            <textarea id="application-notes" rows="8" formControlName="notesMarkdown"></textarea>
+          </label>
+        </div>
+      </fieldset>
+
+      @if (application(); as savedApplication) {
+        <p class="metadata">
+          Created {{ savedApplication.createdAt | date: 'medium' }} · Updated
+          {{ savedApplication.updatedAt | date: 'medium' }}
+        </p>
+      }
+
+      <div class="form-actions">
+        <a class="button button--secondary" routerLink="/applications">Cancel</a>
+        <button class="button button--primary" type="submit" [disabled]="saving()">
+          {{ saving() ? 'Saving…' : (createMode() ? 'Create application' : 'Save application') }}
+        </button>
+      </div>
+    </form>
+
+    <section id="job-description" class="workspace-section workspace-anchor" aria-labelledby="job-description-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Workspace</p>
+          <h3 id="job-description-title">Job Description</h3>
+        </div>
+        @if (!createMode() && !jobDescriptionLoading() && !jobDescriptionEditing()) {
+          <button class="button button--secondary" type="button" (click)="editJobDescription()">
+            {{ jobDescription() === null ? 'Add job description' : 'Edit job description' }}
+          </button>
+        }
+      </div>
+
+      @if (createMode()) {
+        <p>Save the application before adding a job description.</p>
+      } @else if (jobDescriptionLoading()) {
+        <p role="status" aria-live="polite">Loading job description...</p>
+      } @else if (jobDescriptionLoadError()) {
+        <div class="section-state">
+          <p class="notice notice--error" role="alert">{{ jobDescriptionLoadError() }}</p>
+          <button class="button button--secondary" type="button" (click)="loadJobDescription()">Try again</button>
+        </div>
+      } @else if (jobDescriptionEditing()) {
+        <form class="job-description-form" [formGroup]="jobDescriptionForm" (ngSubmit)="saveJobDescription()">
+          @if (jobDescriptionSaveError()) {
+            <p class="notice notice--error" role="alert">{{ jobDescriptionSaveError() }}</p>
+          }
+
+          <div class="field-grid">
+            <label class="field" for="job-description-title-input">
+              <span>Title</span>
+              <input id="job-description-title-input" type="text" formControlName="title" />
+            </label>
+
+            <label class="field" for="job-description-company">
+              <span>Company</span>
+              <input id="job-description-company" type="text" formControlName="companyName" autocomplete="organization" />
+            </label>
+
+            <label class="field field--wide" for="job-description-markdown">
+              <span>Description Markdown *</span>
+              <textarea id="job-description-markdown" rows="14" formControlName="descriptionMarkdown"></textarea>
+              @if (jobDescriptionForm.controls.descriptionMarkdown.touched && jobDescriptionForm.controls.descriptionMarkdown.invalid) {
+                <small>Enter the job description.</small>
+              }
+            </label>
+
+            <label class="field field--wide" for="job-requirements-markdown">
+              <span>Requirements Markdown</span>
+              <textarea id="job-requirements-markdown" rows="7" formControlName="requirementsMarkdown"></textarea>
+            </label>
+
+            <label class="field field--wide" for="job-responsibilities-markdown">
+              <span>Responsibilities Markdown</span>
+              <textarea id="job-responsibilities-markdown" rows="7" formControlName="responsibilitiesMarkdown"></textarea>
+            </label>
+
+            <label class="field field--wide" for="job-description-source-url">
+              <span>Source URL</span>
+              <input id="job-description-source-url" type="url" inputmode="url" formControlName="sourceUrl" />
+              @if (jobDescriptionForm.controls.sourceUrl.touched && jobDescriptionForm.controls.sourceUrl.invalid) {
+                <small>Use a complete HTTP or HTTPS URL.</small>
+              }
+            </label>
+          </div>
+
+          <div class="inline-actions">
+            <button class="button button--secondary" type="button" (click)="cancelJobDescriptionEdit()">Cancel</button>
+            <button id="save-job-description" class="button button--primary" type="submit" [disabled]="jobDescriptionSaving()">
+              {{ jobDescriptionSaving() ? 'Saving…' : 'Save job description' }}
+            </button>
+          </div>
+        </form>
+      } @else if (jobDescription(); as description) {
+        @if (jobDescriptionSuccess()) {
+          <p class="notice notice--success" role="status">{{ jobDescriptionSuccess() }}</p>
+        }
+        <dl class="job-description-summary">
+          <div>
+            <dt>Title</dt>
+            <dd>{{ description.title ?? 'Not specified' }}</dd>
+          </div>
+          <div>
+            <dt>Company</dt>
+            <dd>{{ description.companyName ?? 'Not specified' }}</dd>
+          </div>
+          <div class="job-description-summary__wide">
+            <dt>Description</dt>
+            <dd><pre>{{ description.descriptionMarkdown }}</pre></dd>
+          </div>
+          @if (description.requirementsMarkdown) {
+            <div class="job-description-summary__wide">
+              <dt>Requirements</dt>
+              <dd><pre>{{ description.requirementsMarkdown }}</pre></dd>
+            </div>
+          }
+          @if (description.responsibilitiesMarkdown) {
+            <div class="job-description-summary__wide">
+              <dt>Responsibilities</dt>
+              <dd><pre>{{ description.responsibilitiesMarkdown }}</pre></dd>
+            </div>
+          }
+          @if (description.sourceUrl) {
+            <div class="job-description-summary__wide">
+              <dt>Source</dt>
+              <dd><a [href]="description.sourceUrl" target="_blank" rel="noopener noreferrer">Open original posting</a></dd>
+            </div>
+          }
+        </dl>
+      } @else {
+        <div class="section-state">
+          <p>No job description added yet.</p>
+        </div>
+      }
+    </section>
+
+    @if (applicationId(); as id) {
+      <app-application-analysis id="analyze" class="workspace-anchor" [applicationId]="id" />
+      <app-research-section id="research" class="workspace-anchor" [applicationId]="id" />
+    }
+
+    <section id="interviews" class="workspace-section workspace-anchor" aria-labelledby="interviews-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Workspace</p>
+          <h3 id="interviews-title">Interviews</h3>
+        </div>
+        @if (!createMode() && !interviewsLoading() && !interviewEditing()) {
+          <button class="button button--secondary" type="button" (click)="editInterview()">Add interview</button>
+        }
+      </div>
+
+      @if (createMode()) {
+        <p>Save the application before adding interviews.</p>
+      } @else if (interviewsLoading()) {
+        <p role="status" aria-live="polite">Loading interviews...</p>
+      } @else if (interviewsLoadError()) {
+        <div class="section-state">
+          <p class="notice notice--error" role="alert">{{ interviewsLoadError() }}</p>
+          <button class="button button--secondary" type="button" (click)="loadInterviews()">Try again</button>
+        </div>
+      } @else if (interviewEditing()) {
+        <form class="interview-form" [formGroup]="interviewForm" (ngSubmit)="saveInterview()">
+          @if (interviewSaveError()) {
+            <p class="notice notice--error" role="alert">{{ interviewSaveError() }}</p>
+          }
+
+          <div class="field-grid">
+            <label class="field" for="interview-type">
+              <span>Type</span>
+              <select id="interview-type" formControlName="type">
+                @for (type of interviewTypes; track type) {
+                  <option [value]="type">{{ type }}</option>
+                }
+              </select>
+            </label>
+
+            <label class="field" for="interview-status">
+              <span>Status</span>
+              <select id="interview-status" formControlName="status">
+                @for (status of interviewStatuses; track status) {
+                  <option [value]="status">{{ status }}</option>
+                }
+              </select>
+            </label>
+
+            <label class="field" for="interview-scheduled-at">
+              <span>Scheduled at</span>
+              <input id="interview-scheduled-at" type="datetime-local" formControlName="scheduledAt" />
+              @if (interviewForm.controls.scheduledAt.touched && interviewForm.controls.scheduledAt.invalid) {
+                <small>Enter a valid date and time.</small>
+              }
+            </label>
+
+            <label class="field" for="interview-completed-at">
+              <span>Completed at</span>
+              <input id="interview-completed-at" type="datetime-local" formControlName="completedAt" />
+              @if (interviewForm.controls.completedAt.touched && interviewForm.controls.completedAt.invalid) {
+                <small>Enter a valid date and time.</small>
+              } @else if (interviewForm.hasError('interviewDateOrder') && interviewForm.controls.completedAt.touched) {
+                <small>Completed time must be on or after scheduled time.</small>
+              }
+            </label>
+
+            <label class="field" for="interview-sort-order">
+              <span>Sort order</span>
+              <input id="interview-sort-order" type="number" min="0" step="1" formControlName="sortOrder" />
+              @if (interviewForm.controls.sortOrder.touched && interviewForm.controls.sortOrder.invalid) {
+                <small>Use a non-negative whole number.</small>
+              }
+            </label>
+
+            <label class="field field--wide" for="interview-notes">
+              <span>Notes (Markdown)</span>
+              <textarea id="interview-notes" rows="6" formControlName="notesMarkdown"></textarea>
+            </label>
+
+            <label class="field field--wide" for="interview-feedback">
+              <span>Feedback (Markdown)</span>
+              <textarea id="interview-feedback" rows="6" formControlName="feedbackMarkdown"></textarea>
+            </label>
+          </div>
+
+          <div class="inline-actions">
+            <button class="button button--secondary" type="button" (click)="cancelInterviewEdit()">Cancel</button>
+            <button id="save-interview" class="button button--primary" type="submit" [disabled]="interviewSaving()">
+              {{ interviewSaving() ? 'Saving…' : (editingInterviewId() === null ? 'Create interview' : 'Save interview') }}
+            </button>
+          </div>
+        </form>
+      } @else {
+        @if (interviewSuccess()) {
+          <p class="notice notice--success" role="status">{{ interviewSuccess() }}</p>
+        }
+        @if (interviews().length === 0) {
+          <p>No interviews yet.</p>
+        } @else {
+          <ol class="interview-list">
+            @for (interview of interviews(); track interview.id) {
+              <li class="interview-card">
+                <div>
+                  <strong>{{ interview.type }}</strong>
+                  <span class="interview-status">{{ interview.status }}</span>
+                </div>
+                <dl>
+                  <div>
+                    <dt>Scheduled</dt>
+                    <dd>{{ interview.scheduledAt ? (interview.scheduledAt | date: 'medium') : 'Not scheduled' }}</dd>
+                  </div>
+                  <div>
+                    <dt>Completed</dt>
+                    <dd>{{ interview.completedAt ? (interview.completedAt | date: 'medium') : 'Not completed' }}</dd>
+                  </div>
+                </dl>
+                <button class="button button--secondary" type="button" (click)="editInterview(interview)">Edit interview</button>
+              </li>
+            }
+          </ol>
+        }
+      }
+    </section>
+
+    @if (applicationId(); as id) {
+      <app-application-documents id="documents" class="workspace-anchor" [applicationId]="id" />
+
+      <app-application-timeline
+        id="timeline"
+        class="workspace-anchor"
+        [applicationId]="id"
+        [refreshToken]="timelineRefreshToken()"
+      />
+    }
+  }
+</section>

@@ -1,0 +1,39 @@
+<section class="timeline-section" aria-labelledby="application-timeline-title">
+  <header class="timeline-heading">
+    <div>
+      <p class="eyebrow">Activity</p>
+      <h3 id="application-timeline-title">Timeline</h3>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="timeline-state" role="status" aria-live="polite">
+      <span class="spinner" aria-hidden="true"></span>
+      <p>Loading application activity…</p>
+    </div>
+  } @else if (error()) {
+    <div class="timeline-state">
+      <p class="notice notice--error" role="alert">{{ error() }}</p>
+      <button class="button" type="button" (click)="retry()">Try again</button>
+    </div>
+  } @else if (events().length === 0) {
+    <div class="timeline-state timeline-state--empty">
+      <p>No application activity yet.</p>
+    </div>
+  } @else {
+    <ol class="timeline-list" aria-label="Application activity, newest first">
+      @for (event of events(); track event.id) {
+        <li class="timeline-item">
+          <span class="timeline-marker" aria-hidden="true"></span>
+          <article>
+            <time [attr.datetime]="event.occurredAt">
+              {{ event.occurredAt | date: 'medium' }}
+            </time>
+            <h4>{{ event.title }}</h4>
+            <p>{{ event.description }}</p>
+          </article>
+        </li>
+      }
+    </ol>
+  }
+</section>
