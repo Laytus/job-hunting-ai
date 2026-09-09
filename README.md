@@ -1,5 +1,7 @@
 # Job Hunting AI
 
+[![CI](https://github.com/Laytus/job-hunting-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/Laytus/job-hunting-ai/actions/workflows/ci.yml)
+
 A local AI-assisted workspace for managing job opportunities, structured role analysis, source-grounded research, versioned application documents, and interview preparation.
 
 ## Overview
