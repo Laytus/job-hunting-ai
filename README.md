@@ -21,7 +21,7 @@ The project is a single-user MVP intended for local use. Its main technical focu
 - **Usage controls** — guard and record each provider operation using provider-reported model and token metadata.
 - **Responsive Angular UI** — use the core workspace across desktop, tablet, and mobile layouts.
 
-Candidate evidence is maintained once as reusable context for analysis, research, and document generation.
+Candidate context provides reusable evidence for Analyze and document generation, while Research remains scoped to the Application, Job Description, and external sources.
 
 ![Candidate profile](docs/assets/screenshots/candidate-profile.png)
 
