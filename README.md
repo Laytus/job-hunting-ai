@@ -8,6 +8,8 @@ Job searches scatter context across spreadsheets, notes, browser tabs, and one-o
 
 The project is a single-user MVP intended for local use. Its main technical focus is controlled AI integration: workflows receive explicit source context, return schema-validated output, record provider usage, and persist results without silently changing factual Candidate or Application data.
 
+![Applications dashboard](docs/assets/screenshots/applications-dashboard.png)
+
 ## Key capabilities
 
 - **Application workspace** — track opportunities, priority, lifecycle, job descriptions, interviews, and timeline events.
@@ -18,6 +20,14 @@ The project is a single-user MVP intended for local use. Its main technical focu
 - **Versioned documents** — edit Markdown, preview it safely, restore history, and regenerate without overwriting earlier versions.
 - **Usage controls** — guard and record each provider operation using provider-reported model and token metadata.
 - **Responsive Angular UI** — use the core workspace across desktop, tablet, and mobile layouts.
+
+Candidate evidence is maintained once as reusable context for analysis, research, and document generation.
+
+![Candidate profile](docs/assets/screenshots/candidate-profile.png)
+
+Each application remains a single workspace through later stages of the search, including interview tracking and preparation.
+
+![Interview tracking](docs/assets/screenshots/interviews.png)
 
 ## Architecture
 
