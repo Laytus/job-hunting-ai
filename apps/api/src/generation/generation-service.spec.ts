@@ -1219,10 +1219,15 @@ describe('GenerationService failure safety', () => {
 class DeferredExecutor implements LlmExecutor {
   readonly executions: LlmExecutionOptions[] = [];
   private releases: (() => void)[] = [];
+  private readonly executionWaiters = new Set<{
+    readonly expected: number;
+    readonly resolve: () => void;
+  }>();
   private rejectNext: Error | null = null;
 
   async execute(options: LlmExecutionOptions): Promise<LlmResponse> {
     this.executions.push(options);
+    this.resolveExecutionWaiters();
     await new Promise<void>((resolve, reject) => {
       if (this.rejectNext !== null) {
         const error = this.rejectNext;
@@ -1247,22 +1252,27 @@ class DeferredExecutor implements LlmExecutor {
     }
   }
 
+  waitForExecutions(expected: number): Promise<void> {
+    if (this.executions.length >= expected) {
+      return Promise.resolve();
+    }
+    return new Promise((resolve) => {
+      this.executionWaiters.add({ expected, resolve });
+    });
+  }
+
   failNext(error: Error): void {
     this.rejectNext = error;
   }
-}
 
-async function waitForExecutions(
-  executor: DeferredExecutor,
-  expected: number,
-): Promise<void> {
-  for (let attempt = 0; attempt < 50; attempt += 1) {
-    if (executor.executions.length >= expected) {
-      return;
+  private resolveExecutionWaiters(): void {
+    for (const waiter of this.executionWaiters) {
+      if (this.executions.length >= waiter.expected) {
+        this.executionWaiters.delete(waiter);
+        waiter.resolve();
+      }
     }
-    await new Promise<void>((resolve) => setImmediate(resolve));
   }
-  throw new Error(`Timed out waiting for ${expected} deferred executions.`);
 }
 
 describe('GenerationService keyed concurrency', () => {
@@ -1270,7 +1280,7 @@ describe('GenerationService keyed concurrency', () => {
     const executor = new DeferredExecutor();
     const testHarness = harness({ executor });
     const first = testHarness.service.generateDocument(request('COVER_LETTER'));
-    await waitForExecutions(executor, 1);
+    await executor.waitForExecutions(1);
 
     await expect(
       testHarness.service.generateDocument(request('COVER_LETTER')),
@@ -1278,11 +1288,41 @@ describe('GenerationService keyed concurrency', () => {
     const different = testHarness.service.generateDocument(
       request('APPLICATION_BRIEF'),
     );
-    await waitForExecutions(executor, 2);
+    await executor.waitForExecutions(2);
     expect(executor.executions).toHaveLength(2);
     executor.releaseAll();
     await expect(first).resolves.toBeDefined();
     await expect(different).resolves.toBeDefined();
+  });
+
+  it('releases a key after success so a later same-key request can execute', async () => {
+    const executor = new DeferredExecutor();
+    const documents = new MemoryDocuments();
+    const original = documents.seed({
+      applicationId: appId,
+      type: 'COVER_LETTER',
+    });
+    const testHarness = harness({ documents, executor });
+    const regenerate = () =>
+      testHarness.service.generateDocument({
+        mode: 'REGENERATE',
+        applicationId: appId,
+        documentId: original.id,
+        outputLanguage: 'en',
+        market: 'FRANCE',
+        sector: 'SOFTWARE_TECH',
+      });
+
+    const first = regenerate();
+    await executor.waitForExecutions(1);
+    executor.releaseAll();
+    await expect(first).resolves.toBeDefined();
+
+    const later = regenerate();
+    await executor.waitForExecutions(2);
+    executor.releaseAll();
+    await expect(later).resolves.toBeDefined();
+    expect(executor.executions).toHaveLength(2);
   });
 
   it('releases a key after failure so a later request can execute', async () => {
@@ -1294,7 +1334,7 @@ describe('GenerationService keyed concurrency', () => {
       testHarness.service.generateDocument(request('COVER_LETTER')),
     ).rejects.toBeInstanceOf(LlmProviderError);
     const retry = testHarness.service.generateDocument(request('COVER_LETTER'));
-    await waitForExecutions(executor, 2);
+    await executor.waitForExecutions(2);
     expect(executor.executions).toHaveLength(2);
     executor.releaseAll();
     await expect(retry).resolves.toBeDefined();
